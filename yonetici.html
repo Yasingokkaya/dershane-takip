@@ -72,62 +72,44 @@
         }
         .nav-tabs .nav-item:nth-child(4) .nav-link { border-bottom: 4px solid #6610f2; }
 
-/* YENİ GELİŞMİŞ YAZDIRMA STİLİ (DÜZELTİLMİŞ HALİ) */
+/* YAZDIRMA AYARLARI (DÜZELTİLDİ: ÇAKIŞMAYI ÖNLER) */
         @media print {
-            body * {
-                visibility: hidden; /* Sayfadaki her şeyi gizle */
+            body * { 
+                visibility: hidden; /* Her şeyi gizle */
             }
             
-            /* Makbuz ve Ekstre alanlarını ZORLA görünür yap */
-            #makbuzAlani, #ekstreAlani {
+            /* SADECE "d-none" sınıfı OLMAYAN (yani o an açık olan) alanı göster */
+            #makbuzAlani:not(.d-none), 
+            #ekstreAlani:not(.d-none) { 
                 visibility: visible !important;
-                display: block !important; /* ÖNEMLİ: d-none'ı ezer ve kutuyu açar */
-                position: absolute;
-                left: 0;
-                top: 0;
-                width: 100%;
-                margin: 0;
-                padding: 0;
+                display: block !important; 
+                position: absolute; 
+                left: 0; 
+                top: 0; 
+                width: 100%; 
+                margin: 0; 
+                padding: 20px;
                 background-color: white;
-                z-index: 9999; /* En üste çıkar */
+                z-index: 9999;
+                /* Renkleri zorla */
+                -webkit-print-color-adjust: exact !important; 
+                print-color-adjust: exact !important; 
             }
 
-            /* Makbuzun içindeki her şeyi görünür yap */
-            #makbuzAlani *, #ekstreAlani * {
-                visibility: visible !important;
+            /* Açık olan kutunun İÇİNDEKİLERİ de göster */
+            #makbuzAlani:not(.d-none) *, 
+            #ekstreAlani:not(.d-none) * { 
+                visibility: visible !important; 
             }
 
-            /* Yazıcıda renkleri zorla çıkar (Arka plan renkleri için) */
-            * {
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-            }
+            /* Gereksiz kenar boşluklarını sıfırla */
+            @page { margin: 0; size: auto; }
 
-            /* Gereksiz boşlukları kapat */
-            @page {
-                size: auto;
-                margin: 0mm;
-            }
-            
             /* Tablo Tasarımı */
-            .custom-table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 20px;
-            }
-            .custom-table th {
-                background-color: #f0f0f0 !important;
-                color: #000;
-                padding: 12px;
-                text-align: left;
-                border-bottom: 2px solid #000;
-            }
-            .custom-table td {
-                padding: 10px;
-                border-bottom: 1px solid #ddd;
-            }
+            .custom-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            .custom-table th { background-color: #f0f0f0 !important; color: #000; padding: 10px; border-bottom: 2px solid #000; text-align: left; }
+            .custom-table td { padding: 8px; border-bottom: 1px solid #ddd; }
             .text-end-print { text-align: right !important; }
-            .text-center-print { text-align: center !important; }
         }
         /* --- MOBİL UYUMLULUK EKLEMESİ (Bunu style etiketinin en altına ekleyin) --- */
         @media (max-width: 768px) {
@@ -370,7 +352,7 @@
         </div>
     </div>
 
-    <div class="modal fade" id="duzenleModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">✏️ Bilgileri Düzenle</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="editId"><div class="mb-3"><label>Ad Soyad</label><input type="text" id="editAd" class="form-control"></div><div class="mb-3"><label>Saatlik Ücret (TL)</label><input type="number" id="editUcret" class="form-control"></div><div class="mb-3"><label>Rol</label><select id="editRol" class="form-select"><option value="ogretmen">Öğretmen</option><option value="yonetici">Yönetici</option></select></div></div><div class="modal-footer"><button onclick="kullaniciGuncelle()" class="btn btn-primary">Güncelle</button></div></div></div></div>
+
 <div id="makbuzAlani" class="d-none bg-white">
     <div class="container mt-4" style="max-width: 210mm; border: 2px solid #000; padding: 0;">
         
@@ -571,32 +553,86 @@
             }
         }
 
-        // --- RAPOR İŞLEM BUTONLARI ---
+        // --- RAPOR İŞLEM BUTONLARI (MODERN GÖRÜNÜM) ---
         
-        // 1. Dersi Reddet (Onay Bekleyenlere Geri Gönderir)
+        // 1. Dersi Reddet (Modern Onay Kutusu ile)
         window.dersReddet = async function(id) {
-            if(confirm("Bu dersi 'Onay Bekleyenler' listesine geri göndermek istiyor musunuz?")) {
-                await updateDoc(doc(db, "ders_kayitlari", id), { durum: "bekliyor" });
-                raporGetir(); // Listeyi yenile
-                // Onay sekmesini yenilemek için sayfayı yenilemek gerekebilir veya manuel tetiklenir
-                alert("Ders onayı kaldırıldı, bekleyenlere düştü.");
-            }
+            Swal.fire({
+                title: 'Dersi Reddet?',
+                text: "Bu ders kaydı 'Onay Bekleyenler' listesine geri gönderilecek.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#6c757d', // Gri buton
+                cancelButtonColor: '#d33',     // Kırmızı buton
+                confirmButtonText: 'Evet, Geri Gönder',
+                cancelButtonText: 'İptal'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        await updateDoc(doc(db, "ders_kayitlari", id), { durum: "bekliyor" });
+                        Swal.fire('İşlem Tamam', 'Ders onayı kaldırıldı, bekleyenlere düştü.', 'success');
+                        raporGetir(); // Listeyi yenile
+                    } catch (e) {
+                        Swal.fire('Hata', e.message, 'error');
+                    }
+                }
+            });
         }
 
-        // 2. Dersi Sil (Tamamen Yok Eder)
+        // 2. Dersi Sil (Modern Uyarı Kutusu ile)
         window.dersSil = async function(id) {
-            if(confirm("⚠️ DİKKAT: Bu ders kaydı tamamen silinecek! Onaylıyor musunuz?")) {
-                await deleteDoc(doc(db, "ders_kayitlari", id));
-                raporGetir();
-            }
+            Swal.fire({
+                title: 'Tamamen Silinsin mi?',
+                text: "Bu işlem geri alınamaz! Kayıt kalıcı olarak silinecek.",
+                icon: 'error', // Kırmızı çarpı ikonu
+                showCancelButton: true,
+                confirmButtonColor: '#d33', // Kırmızı buton
+                cancelButtonColor: '#3085d6', // Mavi buton
+                confirmButtonText: 'Evet, Sil!',
+                cancelButtonText: 'Vazgeç'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        await deleteDoc(doc(db, "ders_kayitlari", id));
+                        Swal.fire('Silindi!', 'Ders kaydı başarıyla silindi.', 'success');
+                        raporGetir();
+                    } catch (e) {
+                        Swal.fire('Hata', e.message, 'error');
+                    }
+                }
+            });
         }
 
-        // 3. Dersi Düzenle (Sadece Süreyi Değiştirir - Basitlik İçin)
+        // 3. Dersi Düzenle (SİZİN İSTEDİĞİNİZ KISIM - Modern Input Kutusu)
         window.dersDuzenle = async function(id, eskiSure) {
-            const yeniSure = prompt("Yeni ders süresini giriniz (Saat):", eskiSure);
-            if(yeniSure && !isNaN(yeniSure)) {
-                 await updateDoc(doc(db, "ders_kayitlari", id), { sure: parseInt(yeniSure) });
-                 raporGetir();
+            const { value: yeniSure } = await Swal.fire({
+                title: 'Ders Süresini Düzenle',
+                input: 'number', // Sayı girişi olacak
+                inputLabel: 'Yeni süreyi giriniz (Saat)',
+                inputValue: eskiSure, // Kutuda mevcut süre yazsın
+                showCancelButton: true,
+                confirmButtonText: 'Güncelle',
+                cancelButtonText: 'İptal',
+                inputValidator: (value) => {
+                    if (!value) {
+                        return 'Bir süre yazmanız gerekiyor!';
+                    }
+                }
+            });
+
+            if (yeniSure) {
+                try {
+                    await updateDoc(doc(db, "ders_kayitlari", id), { sure: parseInt(yeniSure) });
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Güncellendi',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    raporGetir();
+                } catch (e) {
+                    Swal.fire('Hata', e.message, 'error');
+                }
             }
         }
 
@@ -825,68 +861,7 @@
                 console.error(error);
             }
         }
-// GÜNCELLENMİŞ VE DÜZELTİLMİŞ ÖDEME YAP FONKSİYONU
-        window.odemeYap = async function() {
-            const ogretmen = document.getElementById("muhasebeOgretmen").value;
-            const miktar = document.getElementById("odemeMiktar").value;
-            const aciklama = document.getElementById("odemeAciklama").value;
-            const tarih = document.getElementById("odemeTarih").value;
-
-            // Eğer eksik bilgi varsa uyarı verelim
-            if(!ogretmen || !miktar || !tarih) {
-                return Swal.fire({
-                    icon: 'warning',
-                    title: 'Eksik Bilgi',
-                    text: 'Lütfen tarih, tutar ve öğretmen seçiniz.'
-                });
-            }
-
-            try {
-                // 1. Firebase'e kaydet
-                await addDoc(collection(db, "odemeler"), {
-                    ogretmen_adi: ogretmen,
-                    miktar: parseFloat(miktar),
-                    aciklama: aciklama,
-                    tarih: tarih
-                });
-
-                // 2. Makbuz Bilgilerini Hazırla
-                document.getElementById("mkbAd").innerText = ogretmen;
-                
-                const trTarih = tarih.split("-").reverse().join(".");
-                document.getElementById("mkbTarih").innerText = trTarih;
-                
-                document.getElementById("mkbAciklama").innerText = aciklama || "Ödeme";
-                document.getElementById("mkbTutar").innerText = miktar;
-                document.getElementById("mkbYazi").innerText = sayiyiYaziyaCevir(parseFloat(miktar));
-                
-                // Formu Temizle
-                document.getElementById("odemeMiktar").value = "";
-                document.getElementById("odemeAciklama").value = "";
-
-                // 3. ÖNCE BAŞARILI MESAJINI GÖSTER, SONRA YAZDIR
-                Swal.fire({
-                    position: 'center',
-                    icon: 'success',
-                    title: 'Ödeme Kaydedildi',
-                    text: 'Makbuz hazırlanıyor...',
-                    showConfirmButton: false,
-                    timer: 1500
-                }).then(() => {
-                    // Mesaj kapandıktan sonra çalışır
-                    const makbuzDiv = document.getElementById("makbuzAlani");
-                    makbuzDiv.classList.remove("d-none"); // Makbuzu görünür yap
-                    window.print(); // Yazdır penceresini aç
-                    makbuzDiv.classList.add("d-none"); // Tekrar gizle
-                    
-                    hesapOzetiniGetir(); // Listeyi güncelle
-                });
-
-            } catch (error) {
-                Swal.fire('Hata', error.message, 'error');
-                console.error(error);
-            }
-        }
+        
 
        // YENİ MODERN SİLME FONKSİYONU (SweetAlert2 ile)
         window.odemeSil = function(id) {
@@ -1026,15 +1001,21 @@
             });
         }
 
-        // Düzenleme
-        const editModal = new bootstrap.Modal(document.getElementById('duzenleModal'));
+       // --- KULLANICI DÜZENLEME FONKSİYONLARI (GÜNCELLENDİ) ---
         window.modalAc = function(id, ad, ucret, rol) {
+            // 1. Değerleri Kutulara Doldur
             document.getElementById('editId').value = id;
             document.getElementById('editAd').value = ad;
             document.getElementById('editUcret').value = ucret;
             document.getElementById('editRol').value = rol;
-            editModal.show();
+
+            // 2. Modalı Güvenli Şekilde Aç (Hata vermez)
+            const modalEl = document.getElementById('duzenleModal');
+            const modalInstance = bootstrap.Modal.getOrCreateInstance(modalEl); 
+            modalInstance.show();
         }
+
+        
 
         window.kullaniciGuncelle = async function() {
             const id = document.getElementById('editId').value;
@@ -1047,7 +1028,35 @@
             alert("Güncellendi!");
         }
         
-        window.kullaniciSil = async function(id) { if(confirm("Silinsin mi?")) await deleteDoc(doc(db, "kullanicilar", id)); }
+        // --- PERSONEL SİLME İŞLEMİ (MODERN GÖRÜNÜM) ---
+        window.kullaniciSil = async function(id) {
+            Swal.fire({
+                title: 'Kullanıcı Silinsin mi?',
+                text: "Bu işlem geri alınamaz! Kişi sisteme bir daha giriş yapamayacak.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',   // Kırmızı (Tehlikeli işlem rengi)
+                cancelButtonColor: '#3085d6', // Mavi (Vazgeç rengi)
+                confirmButtonText: 'Evet, Sil!',
+                cancelButtonText: 'Vazgeç'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        // Veritabanından silme işlemi
+                        await deleteDoc(doc(db, "kullanicilar", id));
+                        
+                        // Başarılı mesajı
+                        Swal.fire(
+                            'Silindi!',
+                            'Kullanıcı başarıyla silindi.',
+                            'success'
+                        );
+                    } catch (error) {
+                        Swal.fire('Hata', error.message, 'error');
+                    }
+                }
+            });
+        }
         
         // --- 1. ONAY İŞLEMLERİ VE BİLDİRİM (YENİ HALİ) ---
         let ilkYukleme = true; 
@@ -1105,7 +1114,145 @@
             }
             ilkYukleme = false;
         });
-        window.onayIslemi = async (id, durum) => { if(confirm("Onaylıyor musunuz?")) await updateDoc(doc(db, "ders_kayitlari", id), { durum: durum }); }
+       // --- MODERN ONAY VE REDDETME İŞLEMİ ---
+        window.onayIslemi = async function(id, durum) {
+            // İşlem türüne göre renk ve metin belirleyelim
+            const isApproved = durum === 'onaylandi';
+            
+            Swal.fire({
+                title: isApproved ? 'Dersi Onayla?' : 'Dersi Reddet?',
+                text: isApproved 
+                    ? "Bu ders kaydı onaylanacak ve öğretmenin bakiyesine eklenecek." 
+                    : "Bu ders kaydı reddedilecek.",
+                icon: isApproved ? 'question' : 'warning',
+                showCancelButton: true,
+                confirmButtonColor: isApproved ? '#198754' : '#dc3545', // Yeşil veya Kırmızı
+                cancelButtonColor: '#6c757d',
+                confirmButtonText: isApproved ? 'Evet, Onayla' : 'Evet, Reddet',
+                cancelButtonText: 'İptal'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        // Veritabanını Güncelle
+                        await updateDoc(doc(db, "ders_kayitlari", id), { durum: durum });
+                        
+                        // Kısa bir başarı mesajı göster (1 saniye sonra kaybolur)
+                        Swal.fire({
+                            position: 'center',
+                            icon: 'success',
+                            title: 'İşlem Başarılı',
+                            showConfirmButton: false,
+                            timer: 1000
+                        });
+                    } catch (error) {
+                        Swal.fire('Hata', error.message, 'error');
+                    }
+                }
+            });
+        }
+        
+        // 1. Modalı Açan Fonksiyon
+        const sifreModalElement = new bootstrap.Modal(document.getElementById('sifreModal'));
+        
+        window.sifreModalAc = function(id) {
+            document.getElementById('sifreDegisecekId').value = id; // ID'yi sakla
+            document.getElementById('yeniSifreInput').value = "";   // Kutuyu temizle
+            sifreModalElement.show(); // Pencereyi aç
+        }
+
+        // --- ŞİFRE GÜNCELLEME (MODERN TASARIM) ---
+        window.sifreGuncelle = async function() {
+            const id = document.getElementById('sifreDegisecekId').value;
+            const yeniSifre = document.getElementById('yeniSifreInput').value;
+
+            // 1. Şifre Boşsa Uyar
+            if (!yeniSifre) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Eksik Bilgi',
+                    text: 'Lütfen yeni bir şifre girin!',
+                    confirmButtonText: 'Tamam'
+                });
+                return;
+            }
+
+            try {
+                // 2. Firebase Güncelleme İşlemi
+                await updateDoc(doc(db, "kullanicilar", id), {
+                    sifre: yeniSifre
+                });
+
+                // 3. Modalı Kapat
+                sifreModalElement.hide(); 
+
+                // 4. BAŞARILI MESAJI (MODERN)
+                Swal.fire({
+                    position: 'center',
+                    icon: 'success',
+                    title: 'Şifre Güncellendi',
+                    text: 'Kullanıcının şifresi başarıyla değiştirildi.',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+
+            } catch (error) {
+                Swal.fire('Hata', error.message, 'error');
+            }
+        }
+        // --- KULLANICI GÜNCELLEME (KAYDETME) FONKSİYONU ---
+        window.kullaniciGuncelle = async function() {
+            // 1. Formdaki verileri al
+            const id = document.getElementById('editId').value;
+            const yeniAd = document.getElementById('editAd').value;
+            const yeniUcret = document.getElementById('editUcret').value;
+            const yeniRol = document.getElementById('editRol').value;
+
+            // 2. Hata kontrolü (ID yoksa işlem yapma)
+            if (!id) {
+                alert("Hata: Kullanıcı ID'si bulunamadı!");
+                return;
+            }
+
+            const btn = document.querySelector("#duzenleModal .btn-primary");
+            btn.innerHTML = "Kaydediliyor...";
+            btn.disabled = true;
+
+            try {
+                // 3. Veritabanını Güncelle
+                // Not: 'kullanicilar' koleksiyonundaki 'id'li belgeyi bul ve değiştir
+                const kullaniciRef = doc(db, "kullanicilar", id);
+                
+                await updateDoc(kullaniciRef, {
+                    ad_soyad: yeniAd,
+                    saat_ucreti: parseFloat(yeniUcret), // Sayıya çevir
+                    rol: yeniRol
+                });
+                
+                // 4. Modalı (Pencereyi) Kapat
+                const modalEl = document.getElementById('duzenleModal');
+                const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                if (modalInstance) {
+                    modalInstance.hide();
+                }
+
+                // 5. Başarılı Mesajı Ver
+                Swal.fire({
+                    position: 'center',
+                    icon: 'success',
+                    title: 'Başarıyla Güncellendi',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+
+            } catch (error) {
+                console.error("Güncelleme Hatası:", error);
+                Swal.fire('Hata', 'Güncelleme yapılamadı: ' + error.message, 'error');
+            } finally {
+                // Butonu eski haline getir
+                btn.innerHTML = "Güncelle";
+                btn.disabled = false;
+            }
+        }
     </script>
     <audio id="bildirimSesi" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.m4a" preload="auto"></audio>
 
@@ -1117,11 +1264,64 @@
       <small>Şimdi</small>
       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
     </div>
+   
     <div class="toast-body fw-bold" id="bildirimMetni">
       Bir öğretmen yeni ders kaydı girdi!
     </div>
   </div>
 </div>
-
+<div class="modal fade" id="sifreModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-warning">
+                <h5 class="modal-title text-dark">🔑 Şifre Değiştir</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="sifreDegisecekId">
+                <div class="mb-3">
+                    <label class="form-label">Yeni Şifre</label>
+                    <input type="text" id="yeniSifreInput" class="form-control" placeholder="Yeni şifreyi yazın...">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button onclick="sifreGuncelle()" class="btn btn-warning">Şifreyi Kaydet</button>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="duzenleModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">✏️ Bilgileri Düzenle</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editId">
+                <div class="mb-3">
+                    <label class="form-label">Ad Soyad</label>
+                    <input type="text" id="editAd" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Saatlik Ücret (TL)</label>
+                    <input type="number" id="editUcret" class="form-control">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Rol</label>
+                    <select id="editRol" class="form-select">
+                        <option value="ogretmen">Öğretmen</option>
+                        <option value="yonetici">Yönetici</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">İptal</button>
+                <button onclick="kullaniciGuncelle()" class="btn btn-primary">Güncelle</button>
+            </div>
+        </div>
+    </div>
+</div>
 </body>
 </html>

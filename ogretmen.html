@@ -3,193 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Öğretmen Ders Giriş Paneli</title>
+    <title>Öğretmen Paneli</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-<style>
-        /* ÖĞRETMEN MOBİL AYARLARI */
-        /* Kutuları büyüt (Parmakla basmak kolay olsun) */
-        .form-control, .form-select {
-            height: 50px; 
-            font-size: 16px; /* iPhone'da zoom yapmayı engeller */
-            border-radius: 10px;
-            margin-bottom: 15px;
-        }
-        
-        /* Butonu Büyüt */
-        .btn-lg {
-            height: 55px;
-            font-size: 18px;
-            border-radius: 10px;
-            margin-top: 10px;
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        /* 1. HAREKETLİ ARKA PLAN */
+        body {
+            background: linear-gradient(-45deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Kartı Güzelleştir */
-        .card {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 2. GLASSMORPHISM (BUZLU CAM) KART TASARIMI */
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85); /* Hafif şeffaf beyaz */
+            backdrop-filter: blur(10px); /* Arkasını buzlu göster */
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+
+        .navbar-glass {
+            background: rgba(255, 255, 255, 0.9) !important;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        /* Form Elemanları */
+        .form-floating > .form-control,
+        .form-floating > .form-select {
+            border-radius: 12px;
+            border: 1px solid #ddd;
+            height: 60px; /* Daha yüksek, parmak dostu */
         }
         
-        /* Mobilde arka plan taşmasın */
-        body { padding-bottom: 30px; }
+        .form-control:focus, .form-select:focus {
+            border-color: #23a6d5;
+            box-shadow: 0 0 0 0.25rem rgba(35, 166, 213, 0.25);
+        }
+
+        /* Modern Buton */
+        .btn-modern {
+            background: linear-gradient(45deg, #4776E6 0%, #8E54E9 100%);
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        .btn-modern:active {
+            transform: scale(0.98);
+        }
     </style>
 </head>
 
-<body class="bg-light">
+<body>
 
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+    <nav class="navbar navbar-expand-lg navbar-light navbar-glass mb-4 sticky-top">
         <div class="container">
-            <span class="navbar-brand mb-0 h1">
-                <i class="bi bi-person-workspace"></i> Öğretmen Paneli
+            <span class="navbar-brand mb-0 h1 fw-bold text-primary">
+                <i class="bi bi-mortarboard-fill"></i> Öğretmen Paneli
             </span>
             <div class="d-flex align-items-center">
-                <span class="text-white me-3 small" id="navbarKullaniciAdi"></span>
-                <button onclick="cikisYap()" class="btn btn-light btn-sm text-primary fw-bold">
-                    <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                <span class="text-dark me-3 fw-medium" id="navbarKullaniciAdi"></span>
+                <button onclick="cikisYap()" class="btn btn-outline-danger btn-sm rounded-pill px-3">
+                    <i class="bi bi-power"></i> Çıkış
                 </button>
             </div>
         </div>
     </nav>
 
-    <div class="container">
+    <div class="container pb-5">
         <div class="row justify-content-center">
             <div class="col-md-8 col-lg-6">
-                <div class="card shadow">
-                    <div class="card-header bg-white">
-                        <h5 class="mb-0 text-primary">📚 Ders Kaydı Oluştur</h5>
+                
+                <div class="card glass-card p-4">
+                    <div class="text-center mb-4">
+                        <div class="bg-primary text-white rounded-circle d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-pencil-square fs-3"></i>
+                        </div>
+                        <h4 class="fw-bold text-dark">Ders Kaydı Gir</h4>
+                        <p class="text-muted small">Bugün hangi derse girdiniz?</p>
                     </div>
-                    <div class="card-body">
-                        <form id="dersForm">
-                            <div class="mb-3">
-                                <label class="form-label text-muted small">Öğretmen Adı</label>
-                                <input type="text" id="ogretmenAdi" class="form-control bg-light" readonly required>
+
+                    <form id="dersForm">
+                        
+                        <input type="hidden" id="ogretmenAdi">
+
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <input type="date" id="tarih" class="form-control" required>
+                                    <label for="tarih">Ders Tarihi</label>
+                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Ders Tarihi</label>
-                                <input type="date" id="tarih" class="form-control" required>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <select id="dersTipi" class="form-select" required>
+                                        <option value="" selected disabled>Seçiniz...</option>
+                                        <option value="Matematik">Matematik</option>
+                                        <option value="Fizik">Fizik</option>
+                                        <option value="Kimya">Kimya</option>
+                                        <option value="Biyoloji">Biyoloji</option>
+                                        <option value="Türkçe">Türkçe</option>
+                                        <option value="Birebir Etüt">Birebir Etüt</option>
+                                    </select>
+                                    <label for="dersTipi">Ders / Branş</label>
+                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Ders / Branş</label>
-                                <select id="dersTipi" class="form-select">
-                                    <option value="Matematik">Matematik</option>
-                                    <option value="Fizik">Fizik</option>
-                                    <option value="Kimya">Kimya</option>
-                                    <option value="Biyoloji">Biyoloji</option>
-                                    <option value="Türkçe">Türkçe</option>
-                                    <option value="Birebir Etüt">Birebir Etüt</option>
-                                </select>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <input type="number" id="sure" class="form-control" placeholder="Saat" required min="1">
+                                    <label for="sure">Süre (Saat)</label>
+                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Süre (Saat)</label>
-                                <input type="number" id="sure" class="form-control" placeholder="Örn: 2" required>
+                            <div class="col-12">
+                                <div class="form-floating">
+                                    <input type="text" id="aciklama" class="form-control" placeholder="Not">
+                                    <label for="aciklama">Açıklama (İsteğe Bağlı)</label>
+                                </div>
                             </div>
 
-                            <div class="mb-3">
-                                <label class="form-label">Açıklama (İsteğe bağlı)</label>
-                                <input type="text" id="aciklama" class="form-control" placeholder="Konu, Sınıf vb.">
+                            <div class="col-12 mt-4">
+                                <button type="submit" class="btn btn-modern w-100 py-3 text-white shadow">
+                                    Onaya Gönder 🚀
+                                </button>
                             </div>
+                        </div>
 
-                            <button type="submit" class="btn btn-primary w-100 btn-lg">
-                                Onaya Gönder 🚀
-                            </button>
-                        </form>
-                    </div>
+                    </form>
                 </div>
+
             </div>
         </div>
     </div>
 
-    
-        <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
-    import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
 
-    const firebaseConfig = {
-  apiKey: "AIzaSyCWi2T41yWD2uQz5leN2w1v-0lk6dk_AWM",
-  authDomain: "dershanetakip-34d23.firebaseapp.com",
-  projectId: "dershanetakip-34d23",
-  storageBucket: "dershanetakip-34d23.firebasestorage.app",
-  messagingSenderId: "614841525540",
-  appId: "1:614841525540:web:2851108451bb4ef0e4bfb1",
-  measurementId: "G-RKQH5SZN43"
-};
+        const firebaseConfig = {
+            apiKey: "AIzaSyCWi2T41yWD2uQz5leN2w1v-0lk6dk_AWM",
+            authDomain: "dershanetakip-34d23.firebaseapp.com",
+            projectId: "dershanetakip-34d23",
+            storageBucket: "dershanetakip-34d23.firebasestorage.app",
+            messagingSenderId: "614841525540",
+            appId: "1:614841525540:web:2851108451bb4ef0e4bfb1",
+            measurementId: "G-RKQH5SZN43"
+        };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
 
-    // GÜVENLİK VE GİRİŞ KONTROLÜ
-    window.addEventListener('DOMContentLoaded', () => {
-        if(sessionStorage.getItem("oturum") !== "acik") {
-            window.location.href = "index.html";
-        } else {
-            const adSoyad = sessionStorage.getItem("ad_soyad");
-            document.getElementById("navbarKullaniciAdi").innerText = "Hoşgeldin, " + adSoyad;
-            document.getElementById("ogretmenAdi").value = adSoyad;
-            document.getElementById("tarih").valueAsDate = new Date();
-        }
-    });
-
-    window.cikisYap = function() {
-        sessionStorage.clear();
-        window.location.href = "index.html";
-    }
-
-    // DERS KAYDETME İŞLEMİ (GÜNCELLENDİ: FİYAT ÇEKME EKLENDİ)
-    document.getElementById("dersForm").addEventListener("submit", async function(e) {
-        e.preventDefault(); 
-        const btn = document.querySelector("button[type='submit']");
-        const originalText = btn.innerHTML;
-        btn.innerHTML = "Kaydediliyor...";
-        btn.disabled = true;
-
-        const ad = document.getElementById("ogretmenAdi").value;
-        const tarih = document.getElementById("tarih").value;
-        const ders = document.getElementById("dersTipi").value;
-        const sure = parseInt(document.getElementById("sure").value);
-        const not = document.getElementById("aciklama").value;
-        
-        // E-Postayı session'dan veya veritabanından bulmamız lazım ama 
-        // pratiklik için isme göre öğretmenin güncel ücretini bulalım.
-        let anlikUcret = 0;
-
-        try {
-            // 1. Önce Öğretmenin Güncel Saat Ücretini Bul
-            const qUser = query(collection(db, "kullanicilar"), where("ad_soyad", "==", ad));
-            const userSnap = await getDocs(qUser);
-            
-            if(!userSnap.empty) {
-                // Eğer yönetici ücret girdiyse onu al, yoksa 0 al
-                anlikUcret = userSnap.docs[0].data().saat_ucreti || 0;
+        // --- GÜVENLİK VE GİRİŞ KONTROLÜ ---
+        window.addEventListener('DOMContentLoaded', () => {
+            if(sessionStorage.getItem("oturum") !== "acik") {
+                window.location.href = "index.html";
+            } else {
+                const adSoyad = sessionStorage.getItem("ad_soyad");
+                document.getElementById("navbarKullaniciAdi").innerText = adSoyad;
+                document.getElementById("ogretmenAdi").value = adSoyad;
+                document.getElementById("tarih").valueAsDate = new Date();
             }
+        });
 
-            // 2. Ders Kaydını Fiyatla Birlikte Oluştur
-            await addDoc(collection(db, "ders_kayitlari"), {
-                ogretmen_adi: ad,
-                tarih: tarih,
-                ders_tipi: ders,
-                sure: sure,
-                aciklama: not,
-                durum: "bekliyor",
-                birim_fiyat: parseFloat(anlikUcret), // ÖNEMLİ: O anki fiyatı kilitliyoruz
-                toplam_tutar: sure * parseFloat(anlikUcret), // Kolaylık olsun diye toplamı da yazalım
-                olusturulma_zamani: new Date()
-            });
-
-            alert(`✅ Ders gönderildi! (Saatlik Ücretiniz: ${anlikUcret} TL olarak işlendi)`);
-            document.getElementById("dersForm").reset();
-            document.getElementById("ogretmenAdi").value = ad; 
-            document.getElementById("tarih").valueAsDate = new Date();
-
-        } catch (error) {
-            console.error("Hata: ", error);
-            alert("❌ Hata: " + error.message);
-        } finally {
-            btn.innerHTML = originalText;
-            btn.disabled = false;
+        window.cikisYap = function() {
+            sessionStorage.clear();
+            window.location.href = "index.html";
         }
-    });
-</script>
+
+        // --- DERS KAYDETME İŞLEMİ ---
+        document.getElementById("dersForm").addEventListener("submit", async function(e) {
+            e.preventDefault(); 
+            const btn = document.querySelector("button[type='submit']");
+            const originalText = btn.innerHTML;
+            
+            // Butona yükleniyor efekti
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Gönderiliyor...';
+            btn.disabled = true;
+
+            const ad = document.getElementById("ogretmenAdi").value;
+            const tarih = document.getElementById("tarih").value;
+            const ders = document.getElementById("dersTipi").value;
+            const sure = parseInt(document.getElementById("sure").value);
+            const not = document.getElementById("aciklama").value;
+            
+            let anlikUcret = 0;
+
+            try {
+                // 1. Öğretmenin Güncel Saat Ücretini Bul
+                const qUser = query(collection(db, "kullanicilar"), where("ad_soyad", "==", ad));
+                const userSnap = await getDocs(qUser);
+                
+                if(!userSnap.empty) {
+                    anlikUcret = userSnap.docs[0].data().saat_ucreti || 0;
+                }
+
+                // 2. Ders Kaydını Veritabanına Ekle
+                await addDoc(collection(db, "ders_kayitlari"), {
+                    ogretmen_adi: ad,
+                    tarih: tarih,
+                    ders_tipi: ders,
+                    sure: sure,
+                    aciklama: not,
+                    durum: "bekliyor",
+                    birim_fiyat: parseFloat(anlikUcret),
+                    toplam_tutar: sure * parseFloat(anlikUcret),
+                    olusturulma_zamani: new Date()
+                });
+
+                // 3. KONFETİ PATLAT 🎉 (Dinamiklik burada)
+                confetti({
+                    particleCount: 150,
+                    spread: 70,
+                    origin: { y: 0.6 }
+                });
+
+                // 4. BAŞARILI MESAJI
+                await Swal.fire({
+                    position: 'center',
+                    icon: 'success',
+                    title: 'Harika!',
+                    text: `✅ ${sure} saatlik ders başarıyla sisteme işlendi.`,
+                    showConfirmButton: false,
+                    timer: 2500,
+                    backdrop: `rgba(0,0,123,0.1)` // Hafif bir arka plan karartması
+                });
+
+                // Formu Temizle ve Tarihi Sıfırla
+                const form = document.getElementById("dersForm");
+                form.reset();
+                document.getElementById("tarih").valueAsDate = new Date(); // Tarihi bugüne geri çek
+                document.getElementById("ogretmenAdi").value = ad; // Adı tekrar yerine koy
+
+            } catch (error) {
+                console.error("Hata: ", error);
+                Swal.fire('Hata', error.message, 'error');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        });
+    </script>
+
+</body>
+</html>
