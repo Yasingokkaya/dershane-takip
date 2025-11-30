@@ -976,12 +976,21 @@
             });
         });
 
-        // Yeni Personel Ekle (DÜZELTİLDİ)
+        // --- YENİ PERSONEL EKLEME (MODERN TASARIM) ---
         const formPersonel = document.getElementById("personelForm");
+        
         if (formPersonel) {
             formPersonel.addEventListener("submit", async (e) => {
                 e.preventDefault();
+                
+                // Butona "Ekleniyor..." efekti verelim
+                const btn = formPersonel.querySelector("button[type='submit']");
+                const orjinalMetin = btn.innerHTML;
+                btn.innerHTML = "Ekleniyor...";
+                btn.disabled = true;
+
                 try {
+                    // Veritabanına Kaydet
                     await addDoc(collection(db, "kullanicilar"), {
                         ad_soyad: document.getElementById("yeniAd").value,
                         email: document.getElementById("yeniEmail").value,
@@ -990,17 +999,33 @@
                         rol: document.getElementById("yeniRol").value,
                         olusturulma: new Date()
                     });
-                    formPersonel.reset();
-                    alert("✅ Kullanıcı başarıyla eklendi!");
                     
-                    // Eğer fonksiyon tanımlıysa çalıştır
+                    // Formu Temizle
+                    formPersonel.reset();
+
+                    // BAŞARILI MESAJI (MODERN)
+                    Swal.fire({
+                        position: 'center',
+                        icon: 'success',
+                        title: 'Personel Eklendi',
+                        text: 'Yeni çalışan başarıyla sisteme kaydedildi.',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    
+                    // Listeleri Güncelle
                     if(typeof ogretmenleriYukle === 'function') ogretmenleriYukle();
+
                 } catch (error) {
-                    alert("Hata: " + error.message);
+                    // Hata Mesajı
+                    Swal.fire('Hata', error.message, 'error');
+                } finally {
+                    // Butonu eski haline getir
+                    btn.innerHTML = orjinalMetin;
+                    btn.disabled = false;
                 }
             });
         }
-
        // --- KULLANICI DÜZENLEME FONKSİYONLARI (GÜNCELLENDİ) ---
         window.modalAc = function(id, ad, ucret, rol) {
             // 1. Değerleri Kutulara Doldur
