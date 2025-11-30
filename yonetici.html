@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yönetici Kontrol Merkezi</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    
+   <style>
+        /* Sekmelerin GENEL yapısı ve Eşit Genişlik Ayarı */
+        .nav-tabs {
+            border-bottom: none; /* Alt çizgiyi kaldır */
+            gap: 10px; /* Düğmeler arası boşluk */
+            display: flex; /* Esnek kutu yapısı */
+            width: 100%; /* Tam genişlik */
+        }
+
+        .nav-tabs .nav-item {
+            flex: 1; /* BU SATIR TÜM KUTULARI EŞİT GENİŞLİĞE ZORLAR */
+            text-align: center; /* Yazıları ortalar */
+        }
+
+        .nav-tabs .nav-link {
+            width: 100%; /* Linkin kutuyu tamamen doldurmasını sağlar */
+            border-radius: 10px; /* Köşeleri yuvarla */
+            font-weight: bold;
+            border: 1px solid rgba(0,0,0,0.1);
+            background-color: white;
+            color: #6c757d; /* Pasifken gri yazı */
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Hafif gölge */
+            white-space: nowrap; /* Yazıların alt satıra kaymasını engeller */
+        }
+
+        /* 1. ONAY BEKLEYENLER (Turuncu - Uyarı Rengi) */
+        .nav-tabs .nav-item:nth-child(1) .nav-link.active,
+        .nav-tabs .nav-item:nth-child(1) .nav-link:hover {
+            background-color: #ffca2c !important; 
+            color: #000 !important;
+            border-color: #ffc720;
+        }
+        .nav-tabs .nav-item:nth-child(1) .nav-link { border-bottom: 4px solid #ffca2c; }
+
+
+        /* 2. RAPORLAR (Mavi - Bilgi Rengi) */
+        .nav-tabs .nav-item:nth-child(2) .nav-link.active,
+        .nav-tabs .nav-item:nth-child(2) .nav-link:hover {
+            background-color: #0dcaf0 !important;
+            color: #000 !important;
+            border-color: #0aa2c0;
+        }
+        .nav-tabs .nav-item:nth-child(2) .nav-link { border-bottom: 4px solid #0dcaf0; }
+
+
+        /* 3. MUHASEBE (Yeşil - Para Rengi) */
+        .nav-tabs .nav-item:nth-child(3) .nav-link.active,
+        .nav-tabs .nav-item:nth-child(3) .nav-link:hover {
+            background-color: #198754 !important;
+            color: white !important;
+            border-color: #157347;
+        }
+        .nav-tabs .nav-item:nth-child(3) .nav-link { border-bottom: 4px solid #198754; }
+
+
+        /* 4. PERSONEL YÖNETİMİ (Mor - Yönetim Rengi) */
+        .nav-tabs .nav-item:nth-child(4) .nav-link.active,
+        .nav-tabs .nav-item:nth-child(4) .nav-link:hover {
+            background-color: #6610f2 !important;
+            color: white !important;
+            border-color: #520dc2;
+        }
+        .nav-tabs .nav-item:nth-child(4) .nav-link { border-bottom: 4px solid #6610f2; }
+
+
+        /* Yazdırma Ayarı */
+        @media print {
+            body * { visibility: hidden; }
+            #makbuzAlani, #makbuzAlani * { visibility: visible; }
+            #makbuzAlani { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+    </style>
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-dark bg-dark mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">🏫 Yönetici & Muhasebe Paneli</span>
+            <div class="d-flex align-items-center">
+                <span class="text-white me-3 small" id="kullaniciBilgi"></span>
+                <button onclick="cikisYap()" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Çıkış</button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <ul class="nav nav-tabs nav-fill mb-3" role="tablist">
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#onay">🔔 Onay Bekleyenler <span id="badgeSayi" class="badge bg-danger ms-2">0</span></button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#rapor">📊 Raporlar</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#muhasebe">💰 Muhasebe & Ödeme</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#personel">👥 Personel Yönetimi</button></li>
+        </ul>
+
+        <div class="tab-content">
+            
+            <div class="tab-pane fade show active" id="onay">
+                <div class="card shadow-sm border-0"><div class="card-body p-0"><table class="table table-hover table-striped mb-0 text-center align-middle"><thead class="table-dark"><tr><th>Öğretmen</th><th>Tarih</th><th>Ders</th><th>Süre</th><th>İşlem</th></tr></thead><tbody id="bekleyenTablo"><tr><td colspan="5" class="p-4">Yükleniyor...</td></tr></tbody></table></div></div>
+            </div>
+
+            <div class="tab-pane fade" id="rapor">
+                <div class="card shadow-sm border-0"><div class="card-body">
+                    <div class="row g-2 mb-3">
+    <div class="col-md-3">
+        <select id="filtreAd" class="form-select">
+            <option value="">Tüm Öğretmenler</option>
+        </select>
+    </div>
+    <div class="col-md-3"><input type="date" id="baslangicTarih" class="form-control"></div>
+    <div class="col-md-3"><input type="date" id="bitisTarih" class="form-control"></div>
+    <div class="col-md-3"><button onclick="raporGetir()" class="btn btn-primary w-100">Listele</button></div>
+</div>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-sm text-center align-middle">
+        <thead class="table-secondary">
+            <tr>
+                <th>Tarih</th>
+                <th>Öğretmen</th>
+                <th>Ders</th>
+                <th>Süre</th>
+                <th>Birim Fiyat</th>
+                <th>Tutar</th>
+                <th>İşlemler</th> 
+            </tr>
+        </thead>
+        <tbody id="raporTablo"><tr><td colspan="7">Veri yok.</td></tr></tbody>
+    </table>
+</div>
+                </div></div>
+            </div>
+
+            <div class="tab-pane fade" id="muhasebe">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="card shadow border-0 mb-3">
+                            <div class="card-header bg-success text-white">🧮 Hesap Seçimi</div>
+                            <div class="card-body">
+                                <label>Öğretmen Seçin:</label>
+                                <select id="muhasebeOgretmen" class="form-select mb-3" onchange="hesapOzetiniGetir()"></select>
+                                <div class="d-grid gap-2">
+                                    <button onclick="hesapOzetiniGetir()" class="btn btn-outline-primary">Hesabı Güncelle</button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card shadow border-0">
+                            <div class="card-header bg-warning text-dark">💸 Ödeme Yap</div>
+                            <div class="card-body">
+    <label class="small text-muted">Ödeme Tarihi</label>
+    <input type="date" id="odemeTarih" class="form-control mb-2">
+    
+    <label class="small text-muted">Tutar (TL)</label>
+    <input type="number" id="odemeMiktar" class="form-control mb-2" placeholder="0.00">
+    
+    <label class="small text-muted">Açıklama</label>
+    <input type="text" id="odemeAciklama" class="form-control mb-2" placeholder="Örn: Kasım Maaşı">
+    
+    <button onclick="odemeYap()" class="btn btn-success w-100">Ödemeyi Kaydet ve Makbuz Kes</button>
+</div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-8">
+                        <div class="row text-center mb-4">
+                            <div class="col-md-4"><div class="card bg-light border-primary"><div class="card-body"><h6 class="text-primary">Toplam Hak Ediş</h6><h3 id="lblHakedis">0 ₺</h3></div></div></div>
+                            <div class="col-md-4"><div class="card bg-light border-success"><div class="card-body"><h6 class="text-success">Toplam Ödenen</h6><h3 id="lblOdenen">0 ₺</h3></div></div></div>
+                            <div class="col-md-4"><div class="card bg-light border-danger"><div class="card-body"><h6 class="text-danger">Kalan Bakiye</h6><h3 id="lblKalan">0 ₺</h3></div></div></div>
+                        </div>
+
+                        <div class="card shadow-sm">
+                            <div class="card-header">📋 Son Hesap Hareketleri</div>
+                            <ul class="list-group list-group-flush" id="hareketListesi">
+                                <li class="list-group-item text-muted">Öğretmen seçiniz...</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade" id="personel">
+                <div class="row justify-content-center">
+                    <div class="col-md-5 mb-3">
+                        <div class="card shadow border-0 h-100">
+                            <div class="card-header bg-primary text-white"><h5 class="mb-0">➕ Yeni Çalışan Ekle</h5></div>
+                            <div class="card-body">
+                                <form id="personelForm">
+                                    <div class="mb-2"><input type="text" id="yeniAd" class="form-control" placeholder="Ad Soyad" required></div>
+                                    <div class="mb-2"><input type="email" id="yeniEmail" class="form-control" placeholder="E-Posta" required></div>
+                                    <div class="mb-2"><input type="text" id="yeniSifre" class="form-control" placeholder="Şifre" required></div>
+                                    <div class="mb-2">
+                                        <label class="small text-muted">Saatlik Ücret (TL)</label>
+                                        <input type="number" id="yeniUcret" class="form-control" placeholder="Örn: 500" required>
+                                    </div>
+                                    <div class="mb-3"><select id="yeniRol" class="form-select"><option value="ogretmen">Öğretmen</option><option value="yonetici">Yönetici</option></select></div>
+                                    <button type="submit" class="btn btn-success w-100">Kaydet</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-7"><div class="card shadow border-0"><div class="card-header bg-secondary text-white"><h5 class="mb-0">📋 Mevcut Kullanıcılar</h5></div><div class="card-body p-0"><ul class="list-group list-group-flush" id="kullaniciListesi"><li class="list-group-item text-center">Yükleniyor...</li></ul></div></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="duzenleModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">✏️ Bilgileri Düzenle</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="editId"><div class="mb-3"><label>Ad Soyad</label><input type="text" id="editAd" class="form-control"></div><div class="mb-3"><label>Saatlik Ücret (TL)</label><input type="number" id="editUcret" class="form-control"></div><div class="mb-3"><label>Rol</label><select id="editRol" class="form-select"><option value="ogretmen">Öğretmen</option><option value="yonetici">Yönetici</option></select></div></div><div class="modal-footer"><button onclick="kullaniciGuncelle()" class="btn btn-primary">Güncelle</button></div></div></div></div>
+
+    <div id="makbuzAlani" class="d-none bg-white p-5">
+        <div class="border p-4 text-center">
+            <h3>ÖDEME MAKBUZU</h3>
+            <p class="text-muted">Dershane Takip Sistemi</p>
+            <hr>
+            <div class="text-start">
+                <p><strong>Sayın:</strong> <span id="mkbAd"></span></p>
+                <p><strong>Tarih:</strong> <span id="mkbTarih"></span></p>
+                <p><strong>Açıklama:</strong> <span id="mkbAciklama"></span></p>
+                <h2 class="text-end mt-4">Tutar: <span id="mkbTutar"></span> TL</h2>
+            </div>
+            <hr>
+            <p class="mt-5">İmza / Kaşe</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+        import { getFirestore, collection, query, where, onSnapshot, doc, updateDoc, deleteDoc, orderBy, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+       
+        const firebaseConfig = {
+  apiKey: "AIzaSyCWi2T41yWD2uQz5leN2w1v-0lk6dk_AWM",
+  authDomain: "dershanetakip-34d23.firebaseapp.com",
+  projectId: "dershanetakip-34d23",
+  storageBucket: "dershanetakip-34d23.firebasestorage.app",
+  messagingSenderId: "614841525540",
+  appId: "1:614841525540:web:2851108451bb4ef0e4bfb1",
+  measurementId: "G-RKQH5SZN43"
+};
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // --- GÜVENLİK (DÜZELTİLDİ) ---
+        window.cikisYap = function() { sessionStorage.clear(); window.location.href = "index.html"; }
+        
+        if(sessionStorage.getItem("oturum") !== "acik") { 
+            window.location.href = "index.html"; 
+        } else {
+            const bilgiKutusu = document.getElementById("kullaniciBilgi");
+            if (bilgiKutusu) {
+                bilgiKutusu.innerText = "Yönetici: " + (sessionStorage.getItem("ad_soyad") || "");
+            }
+        }
+
+       // --- SAYFA AÇILINCA ÇALIŞACAK AYARLAR ---
+        // Bu kod bloğunu script'in en altına ekleyerek sayfa açılışında tarihleri dolduruyoruz.
+        async function sayfaHazirlik() {
+            // 1. Tarihleri Ayarla (Bu Ayın Başı ve Sonu)
+            const bugun = new Date();
+            const ayinIlkGunu = new Date(bugun.getFullYear(), bugun.getMonth(), 1).toISOString().split('T')[0];
+            const ayinSonGunu = new Date(bugun.getFullYear(), bugun.getMonth() + 1, 0).toISOString().split('T')[0];
+
+            const baslangicInput = document.getElementById("baslangicTarih");
+            const bitisInput = document.getElementById("bitisTarih");
+
+            if(baslangicInput) baslangicInput.value = ayinIlkGunu;
+            if(bitisInput) bitisInput.value = ayinSonGunu;
+
+            // 2. Rapor Filtresindeki Öğretmenleri Doldur
+            const q = query(collection(db, "kullanicilar"), where("rol", "==", "ogretmen"));
+            const snapshot = await getDocs(q);
+            const select = document.getElementById("filtreAd");
+            if(select) {
+                select.innerHTML = "<option value=''>Tüm Öğretmenler</option>";
+                snapshot.forEach(doc => {
+                    select.innerHTML += `<option value="${doc.data().ad_soyad}">${doc.data().ad_soyad}</option>`;
+                });
+            }
+            
+            // Hazırlık bitince otomatik listele
+            if(typeof raporGetir === 'function') raporGetir();
+        }
+        // Sayfa yüklenince çalıştır
+        sayfaHazirlik();
+
+
+        // --- GELİŞMİŞ RAPORLAMA FONKSİYONU ---
+        window.raporGetir = async function() {
+            const adKutusu = document.getElementById("filtreAd");
+            const baslangicKutusu = document.getElementById("baslangicTarih");
+            const bitisKutusu = document.getElementById("bitisTarih");
+            const tablo = document.getElementById("raporTablo");
+
+            if (!tablo) return;
+
+            // Select'ten değeri al (Ad Soyad veya Boş)
+            const secilenOgretmen = adKutusu ? adKutusu.value : "";
+            const baslangic = baslangicKutusu ? baslangicKutusu.value : "";
+            const bitis = bitisKutusu ? bitisKutusu.value : "";
+
+            tablo.innerHTML = "<tr><td colspan='7'>Yükleniyor...</td></tr>";
+            
+            try {
+                const q = query(collection(db, "ders_kayitlari"), where("durum", "==", "onaylandi"), orderBy("tarih", "desc"));
+                const snapshot = await getDocs(q);
+                let html = "";
+                let genelToplam = 0;
+
+                snapshot.forEach((docSnap) => {
+                    const veri = docSnap.data();
+                    const id = docSnap.id;
+                    
+                    // Filtreleme
+                    if (secilenOgretmen && veri.ogretmen_adi !== secilenOgretmen) return;
+                    if (baslangic && veri.tarih < baslangic) return;
+                    if (bitis && veri.tarih > bitis) return;
+                    
+                    const fiyat = veri.birim_fiyat || 0;
+                    const tutar = veri.sure * fiyat;
+                    genelToplam += veri.sure;
+
+                    html += `<tr>
+                        <td>${veri.tarih}</td>
+                        <td>${veri.ogretmen_adi}</td>
+                        <td>${veri.ders_tipi}</td>
+                        <td class="fw-bold">${veri.sure} Saat</td>
+                        <td>${fiyat} ₺</td>
+                        <td class="text-success fw-bold">${tutar} ₺</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <button onclick="window.dersDuzenle('${id}', '${veri.sure}')" class="btn btn-outline-warning btn-sm" title="Saati Düzenle"><i class="bi bi-pencil"></i></button>
+                                <button onclick="window.dersReddet('${id}')" class="btn btn-outline-secondary btn-sm" title="Reddet (Geri Gönder)"><i class="bi bi-arrow-counterclockwise"></i></button>
+                                <button onclick="window.dersSil('${id}')" class="btn btn-outline-danger btn-sm" title="Tamamen Sil"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </td>
+                    </tr>`;
+                });
+                tablo.innerHTML = html || "<tr><td colspan='7'>Kayıt yok.</td></tr>";
+                
+                const toplamKutu = document.getElementById("toplamSure");
+                if(toplamKutu) toplamKutu.innerText = genelToplam;
+
+            } catch (error) {
+                console.log("Rapor hatası:", error);
+                tablo.innerHTML = "<tr><td colspan='7' class='text-danger'>Hata oluştu.</td></tr>";
+            }
+        }
+
+        // --- RAPOR İŞLEM BUTONLARI ---
+        
+        // 1. Dersi Reddet (Onay Bekleyenlere Geri Gönderir)
+        window.dersReddet = async function(id) {
+            if(confirm("Bu dersi 'Onay Bekleyenler' listesine geri göndermek istiyor musunuz?")) {
+                await updateDoc(doc(db, "ders_kayitlari", id), { durum: "bekliyor" });
+                raporGetir(); // Listeyi yenile
+                // Onay sekmesini yenilemek için sayfayı yenilemek gerekebilir veya manuel tetiklenir
+                alert("Ders onayı kaldırıldı, bekleyenlere düştü.");
+            }
+        }
+
+        // 2. Dersi Sil (Tamamen Yok Eder)
+        window.dersSil = async function(id) {
+            if(confirm("⚠️ DİKKAT: Bu ders kaydı tamamen silinecek! Onaylıyor musunuz?")) {
+                await deleteDoc(doc(db, "ders_kayitlari", id));
+                raporGetir();
+            }
+        }
+
+        // 3. Dersi Düzenle (Sadece Süreyi Değiştirir - Basitlik İçin)
+        window.dersDuzenle = async function(id, eskiSure) {
+            const yeniSure = prompt("Yeni ders süresini giriniz (Saat):", eskiSure);
+            if(yeniSure && !isNaN(yeniSure)) {
+                 await updateDoc(doc(db, "ders_kayitlari", id), { sure: parseInt(yeniSure) });
+                 raporGetir();
+            }
+        }
+
+        // --- MUHASEBE FONKSİYONLARI (YENİ) ---
+        
+        // 1. Öğretmenleri Listeye Doldur
+        async function ogretmenleriYukle() {
+            const q = query(collection(db, "kullanicilar"), where("rol", "==", "ogretmen"));
+            const snapshot = await getDocs(q);
+            const select = document.getElementById("muhasebeOgretmen");
+            select.innerHTML = "<option value=''>Seçiniz...</option>";
+            snapshot.forEach(doc => {
+                select.innerHTML += `<option value="${doc.data().ad_soyad}">${doc.data().ad_soyad}</option>`;
+            });
+        }
+        ogretmenleriYukle(); // Sayfa açılınca çalıştır
+
+        
+
+        // --- GÜNCELLENMİŞ MUHASEBE FONKSİYONLARI ---
+
+        // 1. Hesap Özeti ve Hareketleri Getir (Sil/Düzenle Butonlu)
+        window.hesapOzetiniGetir = async function() {
+            const ogretmenAdi = document.getElementById("muhasebeOgretmen").value;
+            if(!ogretmenAdi) {
+                document.getElementById("hareketListesi").innerHTML = "<li class='list-group-item text-muted'>Öğretmen seçiniz...</li>";
+                return;
+            }
+
+            document.getElementById("lblKalan").innerText = "Hesaplanıyor...";
+            
+            try {
+                // A. Derslerden Kazandığı
+                const qDers = query(collection(db, "ders_kayitlari"), where("ogretmen_adi", "==", ogretmenAdi), where("durum", "==", "onaylandi"));
+                const dersSnap = await getDocs(qDers);
+                let toplamHakEdis = 0;
+                
+                dersSnap.forEach(doc => {
+                    const veri = doc.data();
+                    const fiyat = veri.birim_fiyat || 0; 
+                    toplamHakEdis += (veri.sure * fiyat);
+                });
+
+                // B. Ödemeleri Listele (Sıralama ve Butonlar)
+                const qOdeme = query(collection(db, "odemeler"), where("ogretmen_adi", "==", ogretmenAdi));
+                const odemeSnap = await getDocs(qOdeme);
+                let toplamOdenen = 0;
+                let hareketlerHTML = "";
+                let odemelerDizisi = [];
+
+                // Verileri diziye al
+                odemeSnap.forEach(doc => { odemelerDizisi.push({ id: doc.id, ...doc.data() }); });
+                
+                // Tarihe göre sırala (Yeniden eskiye)
+                odemelerDizisi.sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
+
+                odemelerDizisi.forEach(veri => {
+                    toplamOdenen += parseFloat(veri.miktar);
+                    
+                    // Listeye Sil ve Düzenle Butonlarını Ekle
+                    hareketlerHTML += `
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <span class="badge bg-secondary mb-1">${veri.tarih}</span><br>
+                            <span class="text-dark small">${veri.aciklama}</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <b class="me-3 text-success">${veri.miktar} ₺</b>
+                            <div class="btn-group">
+                                <button onclick="window.odemeDuzenle('${veri.id}', '${veri.miktar}', '${veri.aciklama}')" class="btn btn-outline-primary btn-sm" title="Düzenle"><i class="bi bi-pencil"></i></button>
+                                <button onclick="window.odemeSil('${veri.id}')" class="btn btn-outline-danger btn-sm" title="Sil"><i class="bi bi-trash"></i></button>
+                            </div>
+                        </div>
+                    </li>`;
+                });
+
+                // C. Toplamları Yaz
+                const kalanBakiye = toplamHakEdis - toplamOdenen;
+
+                document.getElementById("lblHakedis").innerText = toplamHakEdis + " ₺";
+                document.getElementById("lblOdenen").innerText = toplamOdenen + " ₺";
+                document.getElementById("lblKalan").innerText = kalanBakiye + " ₺";
+                document.getElementById("hareketListesi").innerHTML = hareketlerHTML || "<li class='list-group-item'>Henüz ödeme yok.</li>";
+
+                // Formu Hazırla (Bugünün tarihi ve kalan bakiye)
+                document.getElementById("odemeTarih").valueAsDate = new Date();
+                if(kalanBakiye > 0) document.getElementById("odemeMiktar").value = kalanBakiye;
+                else document.getElementById("odemeMiktar").value = "";
+
+            } catch (error) {
+                console.error(error);
+                alert("Hesaplama hatası: " + error.message);
+            }
+        }
+
+        // 2. Ödeme Yap (Tarih Seçimli)
+        window.odemeYap = async function() {
+            const ogretmen = document.getElementById("muhasebeOgretmen").value;
+            const miktar = document.getElementById("odemeMiktar").value;
+            const aciklama = document.getElementById("odemeAciklama").value;
+            const tarih = document.getElementById("odemeTarih").value;
+
+            if(!ogretmen || !miktar || !tarih) return alert("Lütfen tarih, tutar ve öğretmen seçiniz.");
+
+            try {
+                await addDoc(collection(db, "odemeler"), {
+                    ogretmen_adi: ogretmen,
+                    miktar: parseFloat(miktar),
+                    aciklama: aciklama,
+                    tarih: tarih
+                });
+
+                alert("✅ Ödeme Kaydedildi!");
+                
+                // Makbuz Yazdır
+                document.getElementById("mkbAd").innerText = ogretmen;
+                document.getElementById("mkbTarih").innerText = tarih;
+                document.getElementById("mkbAciklama").innerText = aciklama;
+                document.getElementById("mkbTutar").innerText = miktar;
+                
+                const makbuzDiv = document.getElementById("makbuzAlani");
+                makbuzDiv.classList.remove("d-none");
+                window.print();
+                makbuzDiv.classList.add("d-none");
+
+                // Temizlik
+                document.getElementById("odemeMiktar").value = "";
+                document.getElementById("odemeAciklama").value = "";
+                hesapOzetiniGetir(); 
+
+            } catch (error) {
+                alert("Hata: " + error.message);
+            }
+        }
+
+        // 3. Ödeme Silme
+        window.odemeSil = async function(id) {
+            if(confirm("⚠️ Bu ödeme kaydını silmek istiyor musunuz? Bakiye değişecektir!")) {
+                await deleteDoc(doc(db, "odemeler", id));
+                hesapOzetiniGetir();
+            }
+        }
+
+        // 4. Ödeme Düzenleme
+        window.odemeDuzenle = async function(id, eskiMiktar, eskiAciklama) {
+            const yeniMiktar = prompt("Yeni Tutar:", eskiMiktar);
+            if(yeniMiktar === null) return;
+
+            const yeniAciklama = prompt("Yeni Açıklama:", eskiAciklama);
+            if(yeniAciklama === null) return; 
+
+            await updateDoc(doc(db, "odemeler", id), {
+                miktar: parseFloat(yeniMiktar),
+                aciklama: yeniAciklama
+            });
+            alert("Ödeme güncellendi.");
+            hesapOzetiniGetir();
+        }
+
+        // --- PERSONEL YÖNETİMİ (ŞİFRE BUTONU EKLENDİ) ---
+        onSnapshot(collection(db, "kullanicilar"), (snapshot) => {
+            const liste = document.getElementById("kullaniciListesi");
+            liste.innerHTML = "";
+            snapshot.forEach(docSnap => {
+                const user = docSnap.data();
+                const ucret = user.saat_ucreti ? user.saat_ucreti + " TL/Saat" : "Ücret Yok";
+                const rolRozet = user.rol === 'yonetici' ? '<span class="badge bg-danger">Yönetici</span>' : '<span class="badge bg-primary">Öğretmen</span>';
+                
+                liste.innerHTML += `
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div><strong>${user.ad_soyad}</strong> ${rolRozet}<br><small class="text-muted">${user.email} | ${ucret}</small></div>
+                    <div class="btn-group">
+                        <button onclick="window.modalAc('${docSnap.id}', '${user.ad_soyad}', '${user.saat_ucreti||0}', '${user.rol}')" class="btn btn-outline-warning btn-sm" title="Düzenle"><i class="bi bi-pencil-square"></i></button>
+                        <button onclick="window.sifreModalAc('${docSnap.id}')" class="btn btn-outline-info btn-sm" title="Şifre Değiştir"><i class="bi bi-key"></i></button>
+                        <button onclick="window.kullaniciSil('${docSnap.id}')" class="btn btn-outline-danger btn-sm" title="Sil"><i class="bi bi-trash"></i></button>
+                    </div>
+                </li>`;
+            });
+        });
+
+        // Yeni Personel Ekle (DÜZELTİLDİ)
+        const formPersonel = document.getElementById("personelForm");
+        if (formPersonel) {
+            formPersonel.addEventListener("submit", async (e) => {
+                e.preventDefault();
+                try {
+                    await addDoc(collection(db, "kullanicilar"), {
+                        ad_soyad: document.getElementById("yeniAd").value,
+                        email: document.getElementById("yeniEmail").value,
+                        sifre: document.getElementById("yeniSifre").value,
+                        saat_ucreti: parseFloat(document.getElementById("yeniUcret").value) || 0,
+                        rol: document.getElementById("yeniRol").value,
+                        olusturulma: new Date()
+                    });
+                    formPersonel.reset();
+                    alert("✅ Kullanıcı başarıyla eklendi!");
+                    
+                    // Eğer fonksiyon tanımlıysa çalıştır
+                    if(typeof ogretmenleriYukle === 'function') ogretmenleriYukle();
+                } catch (error) {
+                    alert("Hata: " + error.message);
+                }
+            });
+        }
+
+        // Düzenleme
+        const editModal = new bootstrap.Modal(document.getElementById('duzenleModal'));
+        window.modalAc = function(id, ad, ucret, rol) {
+            document.getElementById('editId').value = id;
+            document.getElementById('editAd').value = ad;
+            document.getElementById('editUcret').value = ucret;
+            document.getElementById('editRol').value = rol;
+            editModal.show();
+        }
+
+        window.kullaniciGuncelle = async function() {
+            const id = document.getElementById('editId').value;
+            await updateDoc(doc(db, "kullanicilar", id), {
+                ad_soyad: document.getElementById('editAd').value,
+                saat_ucreti: parseFloat(document.getElementById('editUcret').value),
+                rol: document.getElementById('editRol').value
+            });
+            editModal.hide();
+            alert("Güncellendi!");
+        }
+        
+        window.kullaniciSil = async function(id) { if(confirm("Silinsin mi?")) await deleteDoc(doc(db, "kullanicilar", id)); }
+        
+        // --- 1. ONAY İŞLEMLERİ VE BİLDİRİM (YENİ HALİ) ---
+        let ilkYukleme = true; 
+        
+        // Not: Eğer Console'da index hatası verirse linke tıklayıp oluşturun
+        const qBekleyen = query(collection(db, "ders_kayitlari"), where("durum", "==", "bekliyor"), orderBy("tarih", "desc"));
+        
+        onSnapshot(qBekleyen, (snapshot) => {
+            const tablo = document.getElementById("bekleyenTablo");
+            const badge = document.getElementById("badgeSayi");
+            if(badge) badge.innerText = snapshot.docs.length; 
+            
+            if(tablo) {
+                tablo.innerHTML = "";
+                if (snapshot.docs.length === 0) { 
+                    tablo.innerHTML = `<tr><td colspan="5" class="p-4 text-muted">Bekleyen onay yok. 🎉</td></tr>`; 
+                }
+
+                // A. Tabloyu Doldur
+                snapshot.docs.forEach(docSnap => {
+                    const veri = docSnap.data();
+                    tablo.innerHTML += `<tr>
+                        <td class="fw-bold">${veri.ogretmen_adi}</td>
+                        <td>${veri.tarih}</td>
+                        <td>${veri.ders_tipi}</td>
+                        <td>${veri.sure} Saat</td>
+                        <td>
+                            <button onclick="window.onayIslemi('${docSnap.id}', 'onaylandi')" class="btn btn-success btn-sm me-1">Onayla</button>
+                            <button onclick="window.onayIslemi('${docSnap.id}', 'reddedildi')" class="btn btn-danger btn-sm">Reddet</button>
+                        </td>
+                    </tr>`;
+                });
+            }
+
+            // B. SES VE BİLDİRİM KISMI
+            if (!ilkYukleme) {
+                snapshot.docChanges().forEach((change) => {
+                    if (change.type === "added") {
+                        // Sesi Çal
+                        const ses = document.getElementById("bildirimSesi");
+                        if(ses) ses.play().catch(e => console.log("Ses çalma hatası:", e));
+
+                        // Kutuyu Göster
+                        const yeniVeri = change.doc.data();
+                        const bildirimMetni = document.getElementById("bildirimMetni");
+                        const bildirimKutusu = document.getElementById("canliBildirim");
+                        
+                        if(bildirimMetni && bildirimKutusu) {
+                            bildirimMetni.innerText = `${yeniVeri.ogretmen_adi} yeni bir ders girdi!`;
+                            const toast = new bootstrap.Toast(bildirimKutusu);
+                            toast.show();
+                        }
+                    }
+                });
+            }
+            ilkYukleme = false;
+        });
+        window.onayIslemi = async (id, durum) => { if(confirm("Onaylıyor musunuz?")) await updateDoc(doc(db, "ders_kayitlari", id), { durum: durum }); }
+    </script>
+    <audio id="bildirimSesi" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.m4a" preload="auto"></audio>
+
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+  <div id="canliBildirim" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+    <div class="toast-header bg-success text-white">
+      <i class="bi bi-bell-fill me-2"></i>
+      <strong class="me-auto">Yeni Ders Bildirimi</strong>
+      <small>Şimdi</small>
+      <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
+    </div>
+    <div class="toast-body fw-bold" id="bildirimMetni">
+      Bir öğretmen yeni ders kaydı girdi!
+    </div>
+  </div>
+</div>
+
+</body>
+</html>

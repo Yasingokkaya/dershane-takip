@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Öğretmen Ders Giriş Paneli</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+</head>
+<body class="bg-light">
+
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">
+        <div class="container">
+            <span class="navbar-brand mb-0 h1">
+                <i class="bi bi-person-workspace"></i> Öğretmen Paneli
+            </span>
+            <div class="d-flex align-items-center">
+                <span class="text-white me-3 small" id="navbarKullaniciAdi"></span>
+                <button onclick="cikisYap()" class="btn btn-light btn-sm text-primary fw-bold">
+                    <i class="bi bi-box-arrow-right"></i> Çıkış Yap
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="card shadow">
+                    <div class="card-header bg-white">
+                        <h5 class="mb-0 text-primary">📚 Ders Kaydı Oluştur</h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="dersForm">
+                            <div class="mb-3">
+                                <label class="form-label text-muted small">Öğretmen Adı</label>
+                                <input type="text" id="ogretmenAdi" class="form-control bg-light" readonly required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Ders Tarihi</label>
+                                <input type="date" id="tarih" class="form-control" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Ders / Branş</label>
+                                <select id="dersTipi" class="form-select">
+                                    <option value="Matematik">Matematik</option>
+                                    <option value="Fizik">Fizik</option>
+                                    <option value="Kimya">Kimya</option>
+                                    <option value="Biyoloji">Biyoloji</option>
+                                    <option value="Türkçe">Türkçe</option>
+                                    <option value="Birebir Etüt">Birebir Etüt</option>
+                                </select>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Süre (Saat)</label>
+                                <input type="number" id="sure" class="form-control" placeholder="Örn: 2" required>
+                            </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Açıklama (İsteğe bağlı)</label>
+                                <input type="text" id="aciklama" class="form-control" placeholder="Konu, Sınıf vb.">
+                            </div>
+
+                            <button type="submit" class="btn btn-primary w-100 btn-lg">
+                                Onaya Gönder 🚀
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+        <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js";
+    import { getFirestore, collection, addDoc, query, where, getDocs } from "https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore.js";
+
+    const firebaseConfig = {
+  apiKey: "AIzaSyCWi2T41yWD2uQz5leN2w1v-0lk6dk_AWM",
+  authDomain: "dershanetakip-34d23.firebaseapp.com",
+  projectId: "dershanetakip-34d23",
+  storageBucket: "dershanetakip-34d23.firebasestorage.app",
+  messagingSenderId: "614841525540",
+  appId: "1:614841525540:web:2851108451bb4ef0e4bfb1",
+  measurementId: "G-RKQH5SZN43"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+
+    // GÜVENLİK VE GİRİŞ KONTROLÜ
+    window.addEventListener('DOMContentLoaded', () => {
+        if(sessionStorage.getItem("oturum") !== "acik") {
+            window.location.href = "index.html";
+        } else {
+            const adSoyad = sessionStorage.getItem("ad_soyad");
+            document.getElementById("navbarKullaniciAdi").innerText = "Hoşgeldin, " + adSoyad;
+            document.getElementById("ogretmenAdi").value = adSoyad;
+            document.getElementById("tarih").valueAsDate = new Date();
+        }
+    });
+
+    window.cikisYap = function() {
+        sessionStorage.clear();
+        window.location.href = "index.html";
+    }
+
+    // DERS KAYDETME İŞLEMİ (GÜNCELLENDİ: FİYAT ÇEKME EKLENDİ)
+    document.getElementById("dersForm").addEventListener("submit", async function(e) {
+        e.preventDefault(); 
+        const btn = document.querySelector("button[type='submit']");
+        const originalText = btn.innerHTML;
+        btn.innerHTML = "Kaydediliyor...";
+        btn.disabled = true;
+
+        const ad = document.getElementById("ogretmenAdi").value;
+        const tarih = document.getElementById("tarih").value;
+        const ders = document.getElementById("dersTipi").value;
+        const sure = parseInt(document.getElementById("sure").value);
+        const not = document.getElementById("aciklama").value;
+        
+        // E-Postayı session'dan veya veritabanından bulmamız lazım ama 
+        // pratiklik için isme göre öğretmenin güncel ücretini bulalım.
+        let anlikUcret = 0;
+
+        try {
+            // 1. Önce Öğretmenin Güncel Saat Ücretini Bul
+            const qUser = query(collection(db, "kullanicilar"), where("ad_soyad", "==", ad));
+            const userSnap = await getDocs(qUser);
+            
+            if(!userSnap.empty) {
+                // Eğer yönetici ücret girdiyse onu al, yoksa 0 al
+                anlikUcret = userSnap.docs[0].data().saat_ucreti || 0;
+            }
+
+            // 2. Ders Kaydını Fiyatla Birlikte Oluştur
+            await addDoc(collection(db, "ders_kayitlari"), {
+                ogretmen_adi: ad,
+                tarih: tarih,
+                ders_tipi: ders,
+                sure: sure,
+                aciklama: not,
+                durum: "bekliyor",
+                birim_fiyat: parseFloat(anlikUcret), // ÖNEMLİ: O anki fiyatı kilitliyoruz
+                toplam_tutar: sure * parseFloat(anlikUcret), // Kolaylık olsun diye toplamı da yazalım
+                olusturulma_zamani: new Date()
+            });
+
+            alert(`✅ Ders gönderildi! (Saatlik Ücretiniz: ${anlikUcret} TL olarak işlendi)`);
+            document.getElementById("dersForm").reset();
+            document.getElementById("ogretmenAdi").value = ad; 
+            document.getElementById("tarih").valueAsDate = new Date();
+
+        } catch (error) {
+            console.error("Hata: ", error);
+            alert("❌ Hata: " + error.message);
+        } finally {
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    });
+</script>
