@@ -119,43 +119,68 @@
             .custom-table td { padding: 8px; border-bottom: 1px solid #ddd; }
             .text-end-print { text-align: right !important; }
         }
-        /* --- MOBİL UYUMLULUK EKLEMESİ (Bunu style etiketinin en altına ekleyin) --- */
-        @media (max-width: 768px) {
-            /* Sekmeleri Yana Kaydırma (Instagram Hikayeleri Gibi) */
-            .nav-tabs {
-                flex-wrap: nowrap !important; /* Alt satıra düşmesini engelle */
-                overflow-x: auto !important; /* Yana kaydır */
-                overflow-y: hidden;
-                white-space: nowrap;
-                -webkit-overflow-scrolling: touch;
-                padding-bottom: 5px;
-                gap: 5px;
-            }
-            
-            /* Mobilde Sekme Butonları */
-            .nav-tabs .nav-link {
-                font-size: 0.85rem;
-                padding: 8px 12px;
-                border-radius: 20px; /* Daha yuvarlak butonlar */
-                background-color: #fff;
-                border: 1px solid #dee2e6;
-            }
+        /* --- YENİ EKLENECEK PREMIUM & MOBİL CSS --- */
 
-            /* Tabloların Taşmasını Engelle */
-            .table-responsive {
-                display: block;
-                width: 100%;
-                overflow-x: auto;
-                -webkit-overflow-scrolling: touch;
-            }
-            
-            /* Mobilde Genel Boşluklar */
-            .container { padding-left: 10px; padding-right: 10px; }
-            .card-body { padding: 10px; }
-            
-            /* Başlıkları Küçült */
-            h3 { font-size: 1.3rem; }
+        /* 1. Arka Planı Hareketli Yap */
+        body {
+            background: linear-gradient(-45deg, #1e3c72, #2a5298, #23d5ab, #23a6d5);
+            background-size: 400% 400%;
+            animation: gradient 15s ease infinite;
+            min-height: 100vh;
         }
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        /* 2. Kartlara Buzlu Cam Efekti Ver */
+        .card {
+            background: rgba(255, 255, 255, 0.9) !important; /* Hafif şeffaf */
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15) !important;
+            border-radius: 15px !important;
+        }
+
+        /* 3. Menüyü Güzelleştir */
+        .navbar {
+            background: rgba(255, 255, 255, 0.95) !important;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
+        /* 4. MOBİL İÇİN YATAY KAYDIRILABİLİR SEKMELER (EN ÖNEMLİ KISIM) */
+        .nav-tabs {
+            flex-wrap: nowrap !important; /* Alt satıra düşmesini engelle */
+            overflow-x: auto !important; /* Yana kaydır */
+            overflow-y: hidden;
+            white-space: nowrap;
+            -webkit-overflow-scrolling: touch;
+            padding-bottom: 5px;
+            gap: 10px;
+            border-bottom: none;
+        }
+        
+        /* Sekme Butonlarını Hap Şeklinde Yap */
+        .nav-tabs .nav-link {
+            border-radius: 50px !important;
+            background-color: rgba(255,255,255,0.7);
+            border: 1px solid rgba(0,0,0,0.1);
+            color: #555;
+            padding: 8px 20px;
+            font-size: 0.9rem;
+        }
+        
+        .nav-tabs .nav-link.active {
+            background: linear-gradient(45deg, #4776E6, #8E54E9) !important;
+            color: white !important;
+            border: none;
+            box-shadow: 0 4px 15px rgba(71, 118, 230, 0.4);
+        }
+
+        /* Scroll çubuğunu gizle (Daha temiz görünüm için) */
+        .nav-tabs::-webkit-scrollbar { display: none; }
         /* Çıkış Butonu Özel Efekti */
         .btn-cikis {
             transition: all 0.3s ease;
@@ -175,24 +200,49 @@
 
 <body class="bg-light">
 
-    <nav class="navbar navbar-dark bg-dark mb-4">
-        <div class="container">
-            <span class="navbar-brand mb-0 h1">🏫 Yönetici & Muhasebe Paneli</span>
-            <div class="d-flex align-items-center">
-                <span class="text-white me-3 small" id="kullaniciBilgi"></span>
-                <button onclick="cikisYap()" class="btn btn-outline-danger btn-sm btn-cikis">
-    <i class="bi bi-box-arrow-right"></i> Çıkış
+    <nav class="navbar navbar-expand navbar-light mb-4 sticky-top">
+        <div class="container-fluid px-3">
+            
+            <a class="navbar-brand d-flex align-items-center text-primary fw-bold" href="#">
+                <img src="logo.jpeg" alt="Logo" width="35" height="35" class="d-inline-block align-text-top rounded-3 shadow-sm me-2">
+                <span class="d-none d-sm-inline">Yönetici Paneli</span>
+                <span class="d-inline d-sm-none fs-6">Yönetici</span> </a>
+
+            <div class="d-flex align-items-center ms-auto">
+                <span class="text-dark me-2 fw-bold small d-none d-md-block" id="kullaniciBilgi"></span>
+                <button onclick="cikisYap()" class="btn btn-outline-danger btn-sm rounded-pill px-3 ms-1">
+                    <i class="bi bi-power"></i> <span class="d-none d-sm-inline">Çıkış</span>
+                </button>
+            </div>
+        </div>
+    </nav>
 </button>
             </div>
         </div>
     </nav>
 
     <div class="container">
-        <ul class="nav nav-tabs nav-fill mb-3" role="tablist">
-            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#onay">🔔 Onay Bekleyenler <span id="badgeSayi" class="badge bg-danger ms-2">0</span></button></li>
-            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#rapor">📊 Raporlar</button></li>
-            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#muhasebe">💰 Muhasebe & Ödeme</button></li>
-            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#personel">👥 Personel Yönetimi</button></li>
+        <ul class="nav nav-tabs mb-4" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#onay">
+                    🔔 Onay <span id="badgeSayi" class="badge bg-light text-danger rounded-pill ms-1">0</span>
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#rapor">
+                    📊 Raporlar
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#muhasebe">
+                    💰 Muhasebe
+                </button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#personel">
+                    👥 Personel
+                </button>
+            </li>
         </ul>
 
         <div class="tab-content">
