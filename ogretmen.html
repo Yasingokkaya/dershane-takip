@@ -6,7 +6,36 @@
     <title>Öğretmen Ders Giriş Paneli</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<style>
+        /* ÖĞRETMEN MOBİL AYARLARI */
+        /* Kutuları büyüt (Parmakla basmak kolay olsun) */
+        .form-control, .form-select {
+            height: 50px; 
+            font-size: 16px; /* iPhone'da zoom yapmayı engeller */
+            border-radius: 10px;
+            margin-bottom: 15px;
+        }
+        
+        /* Butonu Büyüt */
+        .btn-lg {
+            height: 55px;
+            font-size: 18px;
+            border-radius: 10px;
+            margin-top: 10px;
+        }
+
+        /* Kartı Güzelleştir */
+        .card {
+            border-radius: 15px;
+            border: none;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+        
+        /* Mobilde arka plan taşmasın */
+        body { padding-bottom: 30px; }
+    </style>
 </head>
+
 <body class="bg-light">
 
     <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm mb-4">

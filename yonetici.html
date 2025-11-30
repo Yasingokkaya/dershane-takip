@@ -6,7 +6,7 @@
     <title>Yönetici Kontrol Merkezi</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
    <style>
         /* Sekmelerin GENEL yapısı ve Eşit Genişlik Ayarı */
         .nav-tabs {
@@ -72,16 +72,104 @@
         }
         .nav-tabs .nav-item:nth-child(4) .nav-link { border-bottom: 4px solid #6610f2; }
 
-
-        /* Yazdırma Ayarı */
+/* YENİ GELİŞMİŞ YAZDIRMA STİLİ (DÜZELTİLMİŞ HALİ) */
         @media print {
-            body * { visibility: hidden; }
-            #makbuzAlani, #makbuzAlani * { visibility: visible; }
-            #makbuzAlani { position: absolute; left: 0; top: 0; width: 100%; }
+            body * {
+                visibility: hidden; /* Sayfadaki her şeyi gizle */
+            }
+            
+            /* Makbuz ve Ekstre alanlarını ZORLA görünür yap */
+            #makbuzAlani, #ekstreAlani {
+                visibility: visible !important;
+                display: block !important; /* ÖNEMLİ: d-none'ı ezer ve kutuyu açar */
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+                margin: 0;
+                padding: 0;
+                background-color: white;
+                z-index: 9999; /* En üste çıkar */
+            }
+
+            /* Makbuzun içindeki her şeyi görünür yap */
+            #makbuzAlani *, #ekstreAlani * {
+                visibility: visible !important;
+            }
+
+            /* Yazıcıda renkleri zorla çıkar (Arka plan renkleri için) */
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            /* Gereksiz boşlukları kapat */
+            @page {
+                size: auto;
+                margin: 0mm;
+            }
+            
+            /* Tablo Tasarımı */
+            .custom-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin-top: 20px;
+            }
+            .custom-table th {
+                background-color: #f0f0f0 !important;
+                color: #000;
+                padding: 12px;
+                text-align: left;
+                border-bottom: 2px solid #000;
+            }
+            .custom-table td {
+                padding: 10px;
+                border-bottom: 1px solid #ddd;
+            }
+            .text-end-print { text-align: right !important; }
+            .text-center-print { text-align: center !important; }
+        }
+        /* --- MOBİL UYUMLULUK EKLEMESİ (Bunu style etiketinin en altına ekleyin) --- */
+        @media (max-width: 768px) {
+            /* Sekmeleri Yana Kaydırma (Instagram Hikayeleri Gibi) */
+            .nav-tabs {
+                flex-wrap: nowrap !important; /* Alt satıra düşmesini engelle */
+                overflow-x: auto !important; /* Yana kaydır */
+                overflow-y: hidden;
+                white-space: nowrap;
+                -webkit-overflow-scrolling: touch;
+                padding-bottom: 5px;
+                gap: 5px;
+            }
+            
+            /* Mobilde Sekme Butonları */
+            .nav-tabs .nav-link {
+                font-size: 0.85rem;
+                padding: 8px 12px;
+                border-radius: 20px; /* Daha yuvarlak butonlar */
+                background-color: #fff;
+                border: 1px solid #dee2e6;
+            }
+
+            /* Tabloların Taşmasını Engelle */
+            .table-responsive {
+                display: block;
+                width: 100%;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            /* Mobilde Genel Boşluklar */
+            .container { padding-left: 10px; padding-right: 10px; }
+            .card-body { padding: 10px; }
+            
+            /* Başlıkları Küçült */
+            h3 { font-size: 1.3rem; }
         }
     </style>
     </style>
 </head>
+
 <body class="bg-light">
 
     <nav class="navbar navbar-dark bg-dark mb-4">
@@ -179,15 +267,83 @@
                         </div>
 
                         <div class="card shadow-sm">
-                            <div class="card-header">📋 Son Hesap Hareketleri</div>
-                            <ul class="list-group list-group-flush" id="hareketListesi">
-                                <li class="list-group-item text-muted">Öğretmen seçiniz...</li>
-                            </ul>
-                        </div>
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h6 class="mb-0">📋 Son Hesap Hareketleri</h6>
+        <button onclick="ekstreYazdir()" class="btn btn-sm btn-dark">
+            <i class="bi bi-printer-fill"></i> Dökümü Yazdır
+        </button>
+    </div>
+    <div class="table-responsive">
+        <table class="table table-striped table-hover mb-0 text-center align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Tarih</th>
+                    <th>Açıklama</th>
+                    <th>Ödeme Tutarı</th>
+                    <th>İşlem</th>
+                </tr>
+            </thead>
+            <tbody id="hareketListesi">
+                <tr><td colspan="4" class="text-muted p-3">Öğretmen seçiniz...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
                     </div>
                 </div>
             </div>
+         <div id="ekstreAlani" class="d-none bg-white p-5">
+    
+    <div class="d-flex justify-content-between align-items-center border-bottom pb-3 mb-4">
+        <div>
+            <h2 class="fw-bold mb-0">HESAP EKSTRESİ</h2>
+            <small class="text-muted">Balıklı Eğitim Kurumları</small>
+        </div>
+        <div class="text-end">
+            <h5 class="mb-0 text-muted">Tarih</h5>
+            <span id="ekstreTarih" class="fw-bold fs-5"></span>
+        </div>
+    </div>
+    
+    <div class="mb-4">
+        <span class="text-muted small">Sayın:</span>
+        <h4 id="ekstreAd" class="fw-bold text-primary m-0"></h4>
+    </div>
 
+    <div class="row g-0 mb-5 border rounded overflow-hidden text-center" style="background-color: #f8f9fa;">
+        <div class="col-4 p-3 border-end">
+            <small class="text-muted d-block mb-1">TOPLAM HAK EDİŞ</small>
+            <h3 id="printHakedis" class="fw-bold text-primary m-0"></h3>
+        </div>
+        <div class="col-4 p-3 border-end">
+            <small class="text-muted d-block mb-1">TOPLAM ÖDENEN</small>
+            <h3 id="printOdenen" class="fw-bold text-success m-0"></h3>
+        </div>
+        <div class="col-4 p-3" style="background-color: #fff3cd;">
+            <small class="text-muted d-block mb-1">KALAN BAKİYE</small>
+            <h3 id="printKalan" class="fw-bold text-danger m-0"></h3>
+        </div>
+    </div>
+    
+    <table class="custom-table">
+        <colgroup>
+            <col style="width: 20%;"> <col style="width: 60%;"> <col style="width: 20%;"> </colgroup>
+        <thead>
+            <tr>
+                <th>TARİH</th>
+                <th>AÇIKLAMA</th>
+                <th class="text-end-print">TUTAR</th>
+            </tr>
+        </thead>
+        <tbody id="ekstreTabloBody">
+            </tbody>
+    </table>
+
+    <div class="mt-5 text-center text-muted small fst-italic">
+        <p>Bu belge bilgisayar ortamında oluşturulmuştur ve ıslak imza gerektirmez.</p>
+        <p>Teşekkür ederiz.</p>
+    </div>
+</div>
             <div class="tab-pane fade" id="personel">
                 <div class="row justify-content-center">
                     <div class="col-md-5 mb-3">
@@ -215,22 +371,79 @@
     </div>
 
     <div class="modal fade" id="duzenleModal" tabindex="-1"><div class="modal-dialog"><div class="modal-content"><div class="modal-header"><h5 class="modal-title">✏️ Bilgileri Düzenle</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><input type="hidden" id="editId"><div class="mb-3"><label>Ad Soyad</label><input type="text" id="editAd" class="form-control"></div><div class="mb-3"><label>Saatlik Ücret (TL)</label><input type="number" id="editUcret" class="form-control"></div><div class="mb-3"><label>Rol</label><select id="editRol" class="form-select"><option value="ogretmen">Öğretmen</option><option value="yonetici">Yönetici</option></select></div></div><div class="modal-footer"><button onclick="kullaniciGuncelle()" class="btn btn-primary">Güncelle</button></div></div></div></div>
-
-    <div id="makbuzAlani" class="d-none bg-white p-5">
-        <div class="border p-4 text-center">
-            <h3>ÖDEME MAKBUZU</h3>
-            <p class="text-muted">Dershane Takip Sistemi</p>
-            <hr>
-            <div class="text-start">
-                <p><strong>Sayın:</strong> <span id="mkbAd"></span></p>
-                <p><strong>Tarih:</strong> <span id="mkbTarih"></span></p>
-                <p><strong>Açıklama:</strong> <span id="mkbAciklama"></span></p>
-                <h2 class="text-end mt-4">Tutar: <span id="mkbTutar"></span> TL</h2>
+<div id="makbuzAlani" class="d-none bg-white">
+    <div class="container mt-4" style="max-width: 210mm; border: 2px solid #000; padding: 0;">
+        
+        <div class="d-flex justify-content-between align-items-center p-4 border-bottom border-dark" style="background-color: #f0f0f0;">
+            <div class="d-flex align-items-center">
+                <i class="bi bi-building-check fs-1 me-3"></i>
+                <div>
+                    <h2 class="fw-bold m-0" style="letter-spacing: 1px;">ÖDEME MAKBUZU</h2>
+                    <small class="text-uppercase text-muted fw-bold">Balıklı Eğitim Kurumları</small>
+                </div>
             </div>
-            <hr>
-            <p class="mt-5">İmza / Kaşe</p>
+            <div class="text-end">
+                <span class="d-block small fw-bold text-muted">TARİH</span>
+                <span id="mkbTarih" class="fs-4 fw-bold text-dark font-monospace"></span>
+            </div>
+        </div>
+
+        <div class="p-4">
+            <div class="row mb-3">
+                <div class="col-8">
+                    <label class="small text-muted fw-bold mb-1">SAYIN / ALICI:</label>
+                    <div id="mkbAd" class="fs-5 fw-bold border-bottom border-secondary pb-1"></div>
+                </div>
+                <div class="col-4">
+                     <label class="small text-muted fw-bold mb-1">İŞLEM TÜRÜ:</label>
+                     <div class="fs-6 border-bottom border-secondary pb-1">Nakit Ödeme</div>
+                </div>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-12">
+                    <label class="small text-muted fw-bold mb-1">AÇIKLAMA:</label>
+                    <div id="mkbAciklama" class="fst-italic border-bottom border-secondary pb-1"></div>
+                </div>
+            </div>
+
+            <div class="row mx-0 border border-dark rounded" style="background-color: #f8f9fa;">
+                <div class="col-9 d-flex align-items-center p-3 border-end border-dark">
+                    <span class="fw-bold text-muted me-2 small">YALNIZ;</span>
+                    <span id="mkbYazi" class="fw-bold text-dark text-uppercase" style="letter-spacing: 0.5px;"></span>
+                </div>
+                <div class="col-3 d-flex align-items-center justify-content-end p-3 bg-white rounded-end">
+                    <span class="fs-3 fw-bold text-dark" id="mkbTutar"></span>
+                    <span class="fs-5 fw-bold ms-1">₺</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row p-4 mt-2">
+            <div class="col-4 text-center">
+                <small class="fw-bold d-block mb-1 text-decoration-underline">TESLİM EDEN (1)</small>
+                <small class="text-muted">Muhasebe</small>
+                <div style="height: 50px; border-bottom: 1px dashed #000; margin-top: 10px;"></div>
+            </div>
+            
+            <div class="col-4 text-center border-start border-end">
+                <small class="fw-bold d-block mb-1 text-decoration-underline">TESLİM EDEN (2)</small>
+                <small class="text-muted">Kurum Müdürü</small>
+                <div style="height: 50px; border-bottom: 1px dashed #000; margin-top: 10px;"></div>
+            </div>
+
+            <div class="col-4 text-center">
+                <small class="fw-bold d-block mb-1 text-decoration-underline">TESLİM ALAN</small>
+                <small class="text-muted">Ad Soyad / İmza</small>
+                <div style="height: 50px; border-bottom: 1px dashed #000; margin-top: 10px;"></div>
+            </div>
+        </div>
+        
+        <div class="text-center py-2 bg-light border-top border-dark small text-muted">
+            
         </div>
     </div>
+</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -403,13 +616,13 @@
 
         
 
-        // --- GÜNCELLENMİŞ MUHASEBE FONKSİYONLARI ---
-
-        // 1. Hesap Özeti ve Hareketleri Getir (Sil/Düzenle Butonlu)
+        // 1. Hesap Özeti ve Hareketleri Getir (GÜNCELLENDİ: TABLO FORMATI)
         window.hesapOzetiniGetir = async function() {
             const ogretmenAdi = document.getElementById("muhasebeOgretmen").value;
+            const tabloBody = document.getElementById("hareketListesi"); // Artık tbody
+            
             if(!ogretmenAdi) {
-                document.getElementById("hareketListesi").innerHTML = "<li class='list-group-item text-muted'>Öğretmen seçiniz...</li>";
+                tabloBody.innerHTML = "<tr><td colspan='4' class='text-muted'>Öğretmen seçiniz...</td></tr>";
                 return;
             }
 
@@ -427,48 +640,49 @@
                     toplamHakEdis += (veri.sure * fiyat);
                 });
 
-                // B. Ödemeleri Listele (Sıralama ve Butonlar)
+                // B. Ödemeleri Listele
                 const qOdeme = query(collection(db, "odemeler"), where("ogretmen_adi", "==", ogretmenAdi));
                 const odemeSnap = await getDocs(qOdeme);
                 let toplamOdenen = 0;
-                let hareketlerHTML = "";
+                let tabloHTML = "";
                 let odemelerDizisi = [];
 
-                // Verileri diziye al
                 odemeSnap.forEach(doc => { odemelerDizisi.push({ id: doc.id, ...doc.data() }); });
                 
                 // Tarihe göre sırala (Yeniden eskiye)
                 odemelerDizisi.sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
 
-                odemelerDizisi.forEach(veri => {
-                    toplamOdenen += parseFloat(veri.miktar);
-                    
-                    // Listeye Sil ve Düzenle Butonlarını Ekle
-                    hareketlerHTML += `
-                    <li class="list-group-item d-flex justify-content-between align-items-center">
-                        <div>
-                            <span class="badge bg-secondary mb-1">${veri.tarih}</span><br>
-                            <span class="text-dark small">${veri.aciklama}</span>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <b class="me-3 text-success">${veri.miktar} ₺</b>
-                            <div class="btn-group">
-                                <button onclick="window.odemeDuzenle('${veri.id}', '${veri.miktar}', '${veri.aciklama}')" class="btn btn-outline-primary btn-sm" title="Düzenle"><i class="bi bi-pencil"></i></button>
-                                <button onclick="window.odemeSil('${veri.id}')" class="btn btn-outline-danger btn-sm" title="Sil"><i class="bi bi-trash"></i></button>
-                            </div>
-                        </div>
-                    </li>`;
-                });
+                if(odemelerDizisi.length === 0) {
+                    tabloHTML = "<tr><td colspan='4' class='text-muted'>Henüz ödeme kaydı yok.</td></tr>";
+                } else {
+                    odemelerDizisi.forEach(veri => {
+                        toplamOdenen += parseFloat(veri.miktar);
+                        
+                        // TABLO SATIRI OLUŞTURMA
+                        tabloHTML += `
+                        <tr>
+                            <td>${tarihFormatla(veri.tarih)}</td>
+                            <td class="text-start">${veri.aciklama}</td>
+                            <td class="fw-bold text-success">${veri.miktar} ₺</td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    <button onclick="window.odemeDuzenle('${veri.id}', '${veri.miktar}', '${veri.aciklama}')" class="btn btn-outline-primary" title="Düzenle"><i class="bi bi-pencil"></i></button>
+                                    <button onclick="window.odemeSil('${veri.id}')" class="btn btn-outline-danger" title="Sil"><i class="bi bi-trash"></i></button>
+                                </div>
+                            </td>
+                        </tr>`;
+                    });
+                }
 
-                // C. Toplamları Yaz
+                // C. Ekrana Bas
                 const kalanBakiye = toplamHakEdis - toplamOdenen;
-
                 document.getElementById("lblHakedis").innerText = toplamHakEdis + " ₺";
                 document.getElementById("lblOdenen").innerText = toplamOdenen + " ₺";
                 document.getElementById("lblKalan").innerText = kalanBakiye + " ₺";
-                document.getElementById("hareketListesi").innerHTML = hareketlerHTML || "<li class='list-group-item'>Henüz ödeme yok.</li>";
+                
+                tabloBody.innerHTML = tabloHTML;
 
-                // Formu Hazırla (Bugünün tarihi ve kalan bakiye)
+                // Formu Hazırla
                 document.getElementById("odemeTarih").valueAsDate = new Date();
                 if(kalanBakiye > 0) document.getElementById("odemeMiktar").value = kalanBakiye;
                 else document.getElementById("odemeMiktar").value = "";
@@ -479,16 +693,94 @@
             }
         }
 
-        // 2. Ödeme Yap (Tarih Seçimli)
+        window.ekstreYazdir = async function() {
+            const ogretmen = document.getElementById("muhasebeOgretmen").value;
+            if(!ogretmen) return alert("Lütfen önce bir öğretmen seçin.");
+
+            // Bilgileri Doldur
+            document.getElementById("ekstreAd").innerText = ogretmen;
+            document.getElementById("ekstreTarih").innerText = new Date().toLocaleDateString('tr-TR');
+            document.getElementById("printHakedis").innerText = document.getElementById("lblHakedis").innerText;
+            document.getElementById("printOdenen").innerText = document.getElementById("lblOdenen").innerText;
+            document.getElementById("printKalan").innerText = document.getElementById("lblKalan").innerText;
+
+            // Tabloyu Kopyala ve Düzenle
+            const anaTablo = document.getElementById("hareketListesi").innerHTML;
+            let temizTablo = anaTablo
+                .replace(/<td>\s*<div class="btn-group[\s\S]*?<\/div>\s*<\/td>/g, "") // Butonları sil
+                .replace(/<td class="fw-bold text-success">/g, '<td class="text-end-print fw-bold">'); // Tutarı sağa yasla
+
+            document.getElementById("ekstreTabloBody").innerHTML = temizTablo;
+
+            // Yazdır
+            const alan = document.getElementById("ekstreAlani");
+            alan.classList.remove("d-none");
+            window.print();
+            alan.classList.add("d-none");
+        }
+// YERİNE KONULACAK KOD BİTİŞİ
+
+        // Yardımcı Fonksiyon: Tarih Formatla (YYYY-MM-DD -> DD.MM.YYYY)
+        function tarihFormatla(tarihStr) {
+            if(!tarihStr) return "";
+            const p = tarihStr.split("-");
+            return `${p[2]}.${p[1]}.${p[0]}`;
+        }
+
+        // YARDIMCI FONKSİYON: Sayıyı Yazıya Çevirir
+        function sayiyiYaziyaCevir(sayi) {
+            let s = Math.floor(sayi);
+            if (s == 0) return "SIFIR TL";
+            
+            const birler = ["", "BİR", "İKİ", "ÜÇ", "DÖRT", "BEŞ", "ALTI", "YEDİ", "SEKİZ", "DOKUZ"];
+            const onlar = ["", "ON", "YİRMİ", "OTUZ", "KIRK", "ELLİ", "ALTMIŞ", "YETMİŞ", "SEKSEN", "DOKSAN"];
+            const basamaklar = ["", "BİN", "MİLYON"];
+            
+            let sonuc = "";
+            let grupSayisi = 0;
+            
+            while (s > 0) {
+                let grup = s % 1000;
+                if (grup > 0) {
+                    let grupYazi = "";
+                    let yuzler = Math.floor(grup / 100);
+                    let on = Math.floor((grup % 100) / 10);
+                    let bir = grup % 10;
+                    
+                    if (yuzler > 0) grupYazi += (yuzler > 1 ? birler[yuzler] + " " : "") + "YÜZ ";
+                    if (on > 0) grupYazi += onlar[on] + " ";
+                    if (bir > 0) {
+                        // "Bir Bin" denmez, sadece "Bin" denir kontrolü
+                        if (!(grupSayisi == 1 && grup == 1)) {
+                            grupYazi += birler[bir] + " ";
+                        }
+                    }
+                    sonuc = grupYazi + basamaklar[grupSayisi] + " " + sonuc;
+                }
+                s = Math.floor(s / 1000);
+                grupSayisi++;
+            }
+            return sonuc.trim() + " TÜRK LİRASI";
+        }
+
+        // GÜNCELLENMİŞ VE DÜZELTİLMİŞ ÖDEME YAP FONKSİYONU
         window.odemeYap = async function() {
             const ogretmen = document.getElementById("muhasebeOgretmen").value;
             const miktar = document.getElementById("odemeMiktar").value;
             const aciklama = document.getElementById("odemeAciklama").value;
             const tarih = document.getElementById("odemeTarih").value;
 
-            if(!ogretmen || !miktar || !tarih) return alert("Lütfen tarih, tutar ve öğretmen seçiniz.");
+            // Eğer eksik bilgi varsa yine şık uyarı verelim
+            if(!ogretmen || !miktar || !tarih) {
+                return Swal.fire({
+                    icon: 'warning',
+                    title: 'Eksik Bilgi',
+                    text: 'Lütfen tarih, tutar ve öğretmen seçiniz.'
+                });
+            }
 
             try {
+                // 1. Firebase'e kaydet
                 await addDoc(collection(db, "odemeler"), {
                     ogretmen_adi: ogretmen,
                     miktar: parseFloat(miktar),
@@ -496,51 +788,196 @@
                     tarih: tarih
                 });
 
-                alert("✅ Ödeme Kaydedildi!");
-                
-                // Makbuz Yazdır
+                // 2. Makbuz Bilgilerini Hazırla (Yazdırmadan önce verileri dolduruyoruz)
                 document.getElementById("mkbAd").innerText = ogretmen;
-                document.getElementById("mkbTarih").innerText = tarih;
-                document.getElementById("mkbAciklama").innerText = aciklama;
-                document.getElementById("mkbTutar").innerText = miktar;
                 
-                const makbuzDiv = document.getElementById("makbuzAlani");
-                makbuzDiv.classList.remove("d-none");
-                window.print();
-                makbuzDiv.classList.add("d-none");
-
-                // Temizlik
+                const trTarih = tarih.split("-").reverse().join(".");
+                document.getElementById("mkbTarih").innerText = trTarih;
+                
+                document.getElementById("mkbAciklama").innerText = aciklama || "Ödeme";
+                document.getElementById("mkbTutar").innerText = miktar;
+                document.getElementById("mkbYazi").innerText = sayiyiYaziyaCevir(parseFloat(miktar));
+                
+                // Formu Temizle
                 document.getElementById("odemeMiktar").value = "";
                 document.getElementById("odemeAciklama").value = "";
-                hesapOzetiniGetir(); 
+
+                // 3. ÖNCE BAŞARILI MESAJINI GÖSTER, SONRA YAZDIR
+                Swal.fire({
+                    position: 'center',
+                    icon: 'success',
+                    title: 'Ödeme Kaydedildi',
+                    text: 'Makbuz hazırlanıyor...',
+                    showConfirmButton: false,
+                    timer: 1500 // 1.5 saniye bekle
+                }).then(() => {
+                    // Bu kısım mesaj kapanınca çalışır
+                    const makbuzDiv = document.getElementById("makbuzAlani");
+                    makbuzDiv.classList.remove("d-none"); // Makbuzu görünür yap
+                    window.print(); // Yazdır penceresini aç
+                    makbuzDiv.classList.add("d-none"); // Tekrar gizle
+                    
+                    hesapOzetiniGetir(); // Listeyi güncelle
+                });
 
             } catch (error) {
-                alert("Hata: " + error.message);
+                Swal.fire('Hata', error.message, 'error');
+                console.error(error);
+            }
+        }
+// GÜNCELLENMİŞ VE DÜZELTİLMİŞ ÖDEME YAP FONKSİYONU
+        window.odemeYap = async function() {
+            const ogretmen = document.getElementById("muhasebeOgretmen").value;
+            const miktar = document.getElementById("odemeMiktar").value;
+            const aciklama = document.getElementById("odemeAciklama").value;
+            const tarih = document.getElementById("odemeTarih").value;
+
+            // Eğer eksik bilgi varsa uyarı verelim
+            if(!ogretmen || !miktar || !tarih) {
+                return Swal.fire({
+                    icon: 'warning',
+                    title: 'Eksik Bilgi',
+                    text: 'Lütfen tarih, tutar ve öğretmen seçiniz.'
+                });
+            }
+
+            try {
+                // 1. Firebase'e kaydet
+                await addDoc(collection(db, "odemeler"), {
+                    ogretmen_adi: ogretmen,
+                    miktar: parseFloat(miktar),
+                    aciklama: aciklama,
+                    tarih: tarih
+                });
+
+                // 2. Makbuz Bilgilerini Hazırla
+                document.getElementById("mkbAd").innerText = ogretmen;
+                
+                const trTarih = tarih.split("-").reverse().join(".");
+                document.getElementById("mkbTarih").innerText = trTarih;
+                
+                document.getElementById("mkbAciklama").innerText = aciklama || "Ödeme";
+                document.getElementById("mkbTutar").innerText = miktar;
+                document.getElementById("mkbYazi").innerText = sayiyiYaziyaCevir(parseFloat(miktar));
+                
+                // Formu Temizle
+                document.getElementById("odemeMiktar").value = "";
+                document.getElementById("odemeAciklama").value = "";
+
+                // 3. ÖNCE BAŞARILI MESAJINI GÖSTER, SONRA YAZDIR
+                Swal.fire({
+                    position: 'center',
+                    icon: 'success',
+                    title: 'Ödeme Kaydedildi',
+                    text: 'Makbuz hazırlanıyor...',
+                    showConfirmButton: false,
+                    timer: 1500
+                }).then(() => {
+                    // Mesaj kapandıktan sonra çalışır
+                    const makbuzDiv = document.getElementById("makbuzAlani");
+                    makbuzDiv.classList.remove("d-none"); // Makbuzu görünür yap
+                    window.print(); // Yazdır penceresini aç
+                    makbuzDiv.classList.add("d-none"); // Tekrar gizle
+                    
+                    hesapOzetiniGetir(); // Listeyi güncelle
+                });
+
+            } catch (error) {
+                Swal.fire('Hata', error.message, 'error');
+                console.error(error);
             }
         }
 
-        // 3. Ödeme Silme
-        window.odemeSil = async function(id) {
-            if(confirm("⚠️ Bu ödeme kaydını silmek istiyor musunuz? Bakiye değişecektir!")) {
-                await deleteDoc(doc(db, "odemeler", id));
-                hesapOzetiniGetir();
-            }
-        }
-
-        // 4. Ödeme Düzenleme
-        window.odemeDuzenle = async function(id, eskiMiktar, eskiAciklama) {
-            const yeniMiktar = prompt("Yeni Tutar:", eskiMiktar);
-            if(yeniMiktar === null) return;
-
-            const yeniAciklama = prompt("Yeni Açıklama:", eskiAciklama);
-            if(yeniAciklama === null) return; 
-
-            await updateDoc(doc(db, "odemeler", id), {
-                miktar: parseFloat(yeniMiktar),
-                aciklama: yeniAciklama
+       // YENİ MODERN SİLME FONKSİYONU (SweetAlert2 ile)
+        window.odemeSil = function(id) {
+            Swal.fire({
+                title: 'Emin misiniz?',
+                text: "Bu ödeme kaydı tamamen silinecek! Bakiye değişecektir.",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',   // Silme butonu kırmızı olsun
+                cancelButtonColor: '#3085d6', // İptal butonu mavi olsun
+                confirmButtonText: 'Evet, Sil!',
+                cancelButtonText: 'Vazgeç'
+            }).then(async (result) => {
+                if (result.isConfirmed) {
+                    try {
+                        // Kullanıcı Evet derse silme işlemini yap
+                        await deleteDoc(doc(db, "odemeler", id));
+                        
+                        // Başarılı kutucuğu göster
+                        Swal.fire(
+                            'Silindi!',
+                            'Ödeme kaydı başarıyla silindi.',
+                            'success'
+                        );
+                        
+                        // Listeyi yenile
+                        hesapOzetiniGetir();
+                    } catch (error) {
+                        Swal.fire('Hata', error.message, 'error');
+                    }
+                }
             });
-            alert("Ödeme güncellendi.");
-            hesapOzetiniGetir();
+        }
+// --- YENİ MODERN DÜZENLEME FONKSİYONU ---
+        window.odemeDuzenle = async function(id, eskiMiktar, eskiAciklama) {
+            
+            // Tek pencerede iki input alanı oluşturuyoruz
+            const { value: formValues } = await Swal.fire({
+                title: 'Ödeme Bilgilerini Düzenle',
+                html: `
+                    <div style="text-align: left;">
+                        <label class="fw-bold text-muted small mb-1">Tutar (TL)</label>
+                        <input id="swal-input1" class="swal2-input m-0 mb-3 w-100" type="number" value="${eskiMiktar}">
+                        
+                        <label class="fw-bold text-muted small mb-1">Açıklama</label>
+                        <input id="swal-input2" class="swal2-input m-0 w-100" type="text" value="${eskiAciklama}">
+                    </div>
+                `,
+                focusConfirm: false,
+                showCancelButton: true,
+                confirmButtonText: 'Kaydet',
+                cancelButtonText: 'Vazgeç',
+                confirmButtonColor: '#0d6efd', // Mavi buton
+                preConfirm: () => {
+                    return [
+                        document.getElementById('swal-input1').value,
+                        document.getElementById('swal-input2').value
+                    ]
+                }
+            });
+
+            // Eğer kullanıcı Kaydet'e bastıysa
+            if (formValues) {
+                const [yeniMiktar, yeniAciklama] = formValues;
+
+                // Tutar boş mu kontrol et
+                if(!yeniMiktar) return Swal.fire("Hata", "Tutar boş bırakılamaz!", "error");
+
+                try {
+                    // Firebase Güncelleme
+                    await updateDoc(doc(db, "odemeler", id), {
+                        miktar: parseFloat(yeniMiktar),
+                        aciklama: yeniAciklama
+                    });
+
+                    // Başarılı Mesajı
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Güncellendi!',
+                        text: 'Ödeme kaydı başarıyla düzeltildi.',
+                        timer: 1500,
+                        showConfirmButton: false
+                    });
+
+                    // Tabloyu Yenile
+                    hesapOzetiniGetir();
+
+                } catch (error) {
+                    Swal.fire('Hata', error.message, 'error');
+                }
+            }
         }
 
         // --- PERSONEL YÖNETİMİ (ŞİFRE BUTONU EKLENDİ) ---
