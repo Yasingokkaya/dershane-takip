@@ -16,29 +16,39 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="theme-color" content="#4e54c8">
    <style>
-        /* Sekmelerin GENEL yapısı ve Eşit Genişlik Ayarı */
+        /* --- OTOMATİK EŞİT DAĞILIMLI SEKMELER (GÜNCELLENDİ) --- */
         .nav-tabs {
-            border-bottom: none; /* Alt çizgiyi kaldır */
-            gap: 10px; /* Düğmeler arası boşluk */
-            display: flex; /* Esnek kutu yapısı */
-            width: 100%; /* Tam genişlik */
+            display: flex;       
+            width: 100%;         
+            border-bottom: none; 
+            gap: 10px;           
+            padding: 0 10px;
+            /* Mobilde kaydırma */
+            flex-wrap: nowrap; 
+            overflow-x: auto; 
+            overflow-y: hidden;
+            -webkit-overflow-scrolling: touch; 
         }
 
+        .nav-tabs::-webkit-scrollbar { display: none; }
+
         .nav-tabs .nav-item {
-            flex: 1; /* BU SATIR TÜM KUTULARI EŞİT GENİŞLİĞE ZORLAR */
-            text-align: center; /* Yazıları ortalar */
+            flex: 1;             /* SİHİRLİ KOD: Hepsini eşit genişlikte yapar */
+            min-width: 100px;    /* Mobilde çok küçülmeyi önler */
+            text-align: center;
         }
 
         .nav-tabs .nav-link {
-            width: 100%; /* Linkin kutuyu tamamen doldurmasını sağlar */
-            border-radius: 10px; /* Köşeleri yuvarla */
-            font-weight: bold;
-            border: 1px solid rgba(0,0,0,0.1);
+            width: 100%;
+            border-radius: 50px;
+            font-weight: 600;
+            white-space: nowrap;
+            text-overflow: ellipsis;
+            padding: 12px 5px;
             background-color: white;
-            color: #6c757d; /* Pasifken gri yazı */
-            transition: all 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Hafif gölge */
-            white-space: nowrap; /* Yazıların alt satıra kaymasını engeller */
+            color: #6c757d;
+            border: 1px solid rgba(0,0,0,0.1);
+            transition: all 0.2s;
         }
 
         /* 1. ONAY BEKLEYENLER (Turuncu - Uyarı Rengi) */
@@ -80,13 +90,22 @@
         }
         .nav-tabs .nav-item:nth-child(4) .nav-link { border-bottom: 4px solid #6610f2; }
 
-/* YAZDIRMA AYARLARI (DÜZELTİLDİ: ÇAKIŞMAYI ÖNLER) */
+/* YAZDIRMA AYARLARI (GÜNCELLENDİ: ARKA PLAN SORUNU GİDERİLDİ) */
         @media print {
+            
+            body, html {
+                background: white !important;
+                background-color: white !important;
+                background-image: none !important;
+                -webkit-print-color-adjust: exact; /* Chrome/Safari için */
+                print-color-adjust: exact;         /* Standart (Diğerleri için) - Bunu ekledik */
+            }
+            /* 2. Sayfadaki her şeyi gizle */
             body * { 
-                visibility: hidden; /* Her şeyi gizle */
+                visibility: hidden; 
             }
             
-            /* SADECE "d-none" sınıfı OLMAYAN (yani o an açık olan) alanı göster */
+            /* 3. SADECE gerekli alanı göster (Makbuz veya Ekstre) */
             #makbuzAlani:not(.d-none), 
             #ekstreAlani:not(.d-none) { 
                 visibility: visible !important;
@@ -96,21 +115,18 @@
                 top: 0; 
                 width: 100%; 
                 margin: 0; 
-                padding: 20px;
-                background-color: white;
+                padding: 0;
+                background-color: white !important; /* Kutunun içi de kesinlikle beyaz olsun */
                 z-index: 9999;
-                /* Renkleri zorla */
-                -webkit-print-color-adjust: exact !important; 
-                print-color-adjust: exact !important; 
             }
 
-            /* Açık olan kutunun İÇİNDEKİLERİ de göster */
+            /* İçerikleri Görünür Yap */
             #makbuzAlani:not(.d-none) *, 
             #ekstreAlani:not(.d-none) * { 
                 visibility: visible !important; 
             }
 
-            /* Gereksiz kenar boşluklarını sıfırla */
+            /* Kenar Boşluklarını Sıfırla */
             @page { margin: 0; size: auto; }
 
             /* Tablo Tasarımı */
@@ -119,7 +135,6 @@
             .custom-table td { padding: 8px; border-bottom: 1px solid #ddd; }
             .text-end-print { text-align: right !important; }
         }
-        /* --- YENİ EKLENECEK PREMIUM & MOBİL CSS --- */
 
         /* 1. Arka Planı Hareketli Yap */
         body {
@@ -194,6 +209,133 @@
             transform: scale(1.1); /* Hafif büyüme */
             box-shadow: 0 0 15px rgba(220, 53, 69, 0.6); /* Kırmızı neon parlama */
         }
+
+        /* --- GENEL KURUMSAL GÖRÜNÜM --- */
+        body {
+            background-color: #f4f6f9; /* Göz yormayan hafif gri */
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
+
+        /* Kartlar (Beyaz ve Sade) */
+        .card {
+            background-color: #ffffff;
+            border: none;
+            border-radius: 12px; /* Hafif yuvarlatılmış köşeler */
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05); /* Çok hafif gölge */
+            margin-bottom: 15px;
+        }
+
+        /* Üst Menü (Beyaz) */
+        .navbar {
+            background-color: #ffffff !important;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        
+       
+
+        /* --- OTOMATİK EŞİT DAĞILIMLI SEKMELER (GÜNCELLENDİ) --- */
+        .nav-tabs {
+            display: flex;       /* Esnek kutu yapısı */
+            width: 100%;         /* Tam genişlik */
+            border-bottom: none; /* Alt çizgiyi kaldır */
+            gap: 10px;           /* Butonlar arası boşluk */
+            padding: 0 10px;     /* Kenarlardan hafif boşluk */
+        }
+
+        .nav-tabs .nav-item {
+            flex: 1;             /* SİHİRLİ KOD: Mevcut alanı kardeş payı yap (Eşit böl) */
+            text-align: center;  /* İçindeki butonu ortala */
+        }
+
+        .nav-tabs .nav-link {
+            width: 100%;         /* Buton bulunduğu kutuyu tam doldursun */
+            border-radius: 50px; /* Hap şeklinde kenarlar */
+            font-weight: 600;
+            white-space: nowrap; /* Yazı tek satırda kalsın */
+            text-overflow: ellipsis; /* Sığmazsa ... koysun */
+            padding: 12px 5px;   /* İç boşluk */
+            
+            /* Görünüm Ayarları */
+            background-color: white;
+            color: #6c757d;
+            border: 1px solid rgba(0,0,0,0.1);
+            transition: all 0.2s;
+        }
+
+        /* Mobilde çok sıkışırsa kaydırmayı devreye sokmak için (Opsiyonel Güvenlik) */
+        @media (max-width: 500px) {
+            .nav-tabs {
+                flex-wrap: wrap; /* Çok dar ekranda alt satıra geçsin */
+            }
+            .nav-tabs .nav-item {
+                flex: 1 0 45%; /* Mobilde yan yana 2 tane sığsın */
+            }
+        }
+
+        /* AKTİF SEKME RENKLERİ (SADELEŞTİRİLDİ) */
+        
+        /* 1. Onay (Sarı) */
+        .nav-tabs .nav-item:nth-child(1) .nav-link.active {
+            background-color: #ffc107;
+            color: #000;
+            border-color: #ffc107;
+            box-shadow: 0 4px 6px rgba(255, 193, 7, 0.3);
+        }
+
+        /* 2. Raporlar (Mavi) */
+        .nav-tabs .nav-item:nth-child(2) .nav-link.active {
+            background-color: #0dcaf0;
+            color: #000;
+            border-color: #0dcaf0;
+            box-shadow: 0 4px 6px rgba(13, 202, 240, 0.3);
+        }
+
+        /* 3. Muhasebe (Yeşil) */
+        .nav-tabs .nav-item:nth-child(3) .nav-link.active {
+            background-color: #198754;
+            color: white;
+            border-color: #198754;
+            box-shadow: 0 4px 6px rgba(25, 135, 84, 0.3);
+        }
+
+        /* 4. Personel (Mor) */
+        .nav-tabs .nav-item:nth-child(4) .nav-link.active {
+            background-color: #6610f2;
+            color: white;
+            border-color: #6610f2;
+            box-shadow: 0 4px 6px rgba(102, 16, 242, 0.3);
+        }
+
+        /* Çıkış Butonu */
+        .btn-cikis {
+            transition: all 0.3s ease;
+            border-radius: 50px;
+            font-weight: bold;
+        }
+        .btn-cikis:hover {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        /* YAZDIRMA AYARLARI */
+        @media print {
+            body * { visibility: hidden; }
+            #makbuzAlani:not(.d-none), #ekstreAlani:not(.d-none) { 
+                visibility: visible !important;
+                display: block !important; 
+                position: absolute; left: 0; top: 0; width: 100%; 
+                z-index: 9999;
+            }
+            #makbuzAlani:not(.d-none) *, #ekstreAlani:not(.d-none) * { visibility: visible !important; }
+            @page { margin: 0; size: auto; }
+            .custom-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+            .custom-table th { background-color: #f0f0f0 !important; border-bottom: 2px solid #000; }
+            .custom-table td { border-bottom: 1px solid #ddd; padding: 8px; }
+            .text-end-print { text-align: right !important; }
+        }
+    </style>
     </style>
     </style>
 </head>
@@ -248,35 +390,61 @@
         <div class="tab-content">
             
             <div class="tab-pane fade show active" id="onay">
-                <div class="card shadow-sm border-0"><div class="card-body p-0"><table class="table table-hover table-striped mb-0 text-center align-middle"><thead class="table-dark"><tr><th>Öğretmen</th><th>Tarih</th><th>Ders</th><th>Süre</th><th>İşlem</th></tr></thead><tbody id="bekleyenTablo"><tr><td colspan="5" class="p-4">Yükleniyor...</td></tr></tbody></table></div></div>
+                <div class="card shadow-sm border-0"><div class="card-body p-0"><table class="table table-hover table-striped mb-0 text-center align-middle"><thead style="background-color: #ffca2c; color: black;"> <tr>
+        <th>Öğretmen</th>
+        <th>Tarih</th>
+        <th>Ders</th>
+        <th>Süre</th>
+        <th>İşlem</th>
+    </tr>
+</thead><tbody id="bekleyenTablo"><tr><td colspan="5" class="p-4">Yükleniyor...</td></tr></tbody></table></div></div>
             </div>
 
             <div class="tab-pane fade" id="rapor">
                 <div class="card shadow-sm border-0"><div class="card-body">
-                    <div class="row g-2 mb-3">
+                    <div class="row g-2 mb-3 align-items-center">
+    <div class="col-md-2">
+        <select id="hizliYil" class="form-select fw-bold text-primary" onchange="hizliYilSec(this.value)">
+            <option value="" selected disabled>Yıl Seç</option>
+            <option value="2023">2023</option>
+            <option value="2024">2024</option>
+            <option value="2025">2025</option>
+            <option value="2026">2026</option>
+        </select>
+    </div>
+
     <div class="col-md-3">
         <select id="filtreAd" class="form-select">
             <option value="">Tüm Öğretmenler</option>
         </select>
     </div>
-    <div class="col-md-3"><input type="date" id="baslangicTarih" class="form-control"></div>
-    <div class="col-md-3"><input type="date" id="bitisTarih" class="form-control"></div>
-    <div class="col-md-3"><button onclick="raporGetir()" class="btn btn-primary w-100">Listele</button></div>
+
+    <div class="col-md-2">
+        <input type="date" id="baslangicTarih" class="form-control" title="Başlangıç">
+    </div>
+    <div class="col-md-2">
+        <input type="date" id="bitisTarih" class="form-control" title="Bitiş">
+    </div>
+
+    <div class="col-md-3">
+        <button onclick="raporGetir()" class="btn btn-primary w-100">
+            <i class="bi bi-search"></i> Listele
+        </button>
+    </div>
 </div>
 
 <div class="table-responsive">
     <table class="table table-bordered table-sm text-center align-middle">
-        <thead class="table-secondary">
-            <tr>
-                <th>Tarih</th>
-                <th>Öğretmen</th>
-                <th>Ders</th>
-                <th>Süre</th>
-                <th>Birim Fiyat</th>
-                <th>Tutar</th>
-                <th>İşlemler</th> 
-            </tr>
-        </thead>
+        <thead style="background-color: #0dcaf0; color: black;"> <tr>
+        <th>Tarih</th>
+        <th>Öğretmen</th>
+        <th>Ders</th>
+        <th>Süre</th>
+        <th>Birim Fiyat</th>
+        <th>Tutar</th>
+        <th>İşlemler</th> 
+    </tr>
+</thead>
         <tbody id="raporTablo"><tr><td colspan="7">Veri yok.</td></tr></tbody>
     </table>
 </div>
@@ -1371,6 +1539,7 @@
                 btn.disabled = false;
             }
         }
+
     </script>
     <audio id="bildirimSesi" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.m4a" preload="auto"></audio>
 
@@ -1383,7 +1552,27 @@
       <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast"></button>
     </div>
    
-    <div class="toast-body fw-bold" id="bildirimMetni">
+    <div class="toast-bod// --- HIZLI YIL SEÇİM FONKSİYONU ---
+        window.hizliYilSec = function(yil) {
+            if(!yil) return;
+            
+            // Tarih kutularını o yılın başı ve sonuna ayarla
+            document.getElementById("baslangicTarih").value = `${yil}-01-01`;
+            document.getElementById("bitisTarih").value = `${yil}-12-31`;
+            
+            // Listeyi otomatik yenile
+            raporGetir();
+            
+            // Kullanıcıya bilgi ver
+            Swal.fire({
+                position: 'top-end',
+                icon: 'info',
+                title: `${yil} yılı kayıtları listeleniyor...`,
+                showConfirmButton: false,
+                timer: 1000,
+                toast: true
+            });
+        }y fw-bold" id="bildirimMetni">
       Bir öğretmen yeni ders kaydı girdi!
     </div>
   </div>
