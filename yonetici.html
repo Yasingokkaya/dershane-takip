@@ -7,6 +7,14 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="icon" type="image/jpeg" href="logo.jpeg">
+    
+    <link rel="apple-touch-icon" href="logo.jpeg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#4e54c8">
    <style>
         /* Sekmelerin GENEL yapısı ve Eşit Genişlik Ayarı */
         .nav-tabs {
@@ -148,6 +156,19 @@
             /* Başlıkları Küçült */
             h3 { font-size: 1.3rem; }
         }
+        /* Çıkış Butonu Özel Efekti */
+        .btn-cikis {
+            transition: all 0.3s ease;
+            border-radius: 50px; /* Yuvarlak hatlar */
+            font-weight: bold;
+            padding: 5px 20px;
+        }
+        .btn-cikis:hover {
+            background-color: #dc3545;
+            color: white;
+            transform: scale(1.1); /* Hafif büyüme */
+            box-shadow: 0 0 15px rgba(220, 53, 69, 0.6); /* Kırmızı neon parlama */
+        }
     </style>
     </style>
 </head>
@@ -159,7 +180,9 @@
             <span class="navbar-brand mb-0 h1">🏫 Yönetici & Muhasebe Paneli</span>
             <div class="d-flex align-items-center">
                 <span class="text-white me-3 small" id="kullaniciBilgi"></span>
-                <button onclick="cikisYap()" class="btn btn-outline-danger btn-sm"><i class="bi bi-box-arrow-right"></i> Çıkış</button>
+                <button onclick="cikisYap()" class="btn btn-outline-danger btn-sm btn-cikis">
+    <i class="bi bi-box-arrow-right"></i> Çıkış
+</button>
             </div>
         </div>
     </nav>
@@ -447,16 +470,36 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
 
-        // --- GÜVENLİK (DÜZELTİLDİ) ---
-        window.cikisYap = function() { sessionStorage.clear(); window.location.href = "index.html"; }
-        
-        if(sessionStorage.getItem("oturum") !== "acik") { 
-            window.location.href = "index.html"; 
-        } else {
-            const bilgiKutusu = document.getElementById("kullaniciBilgi");
-            if (bilgiKutusu) {
-                bilgiKutusu.innerText = "Yönetici: " + (sessionStorage.getItem("ad_soyad") || "");
-            }
+        // --- GÜVENLİ ÇIKIŞ İŞLEMİ (MODERN) ---
+        window.cikisYap = function() {
+            Swal.fire({
+                title: 'Çıkış Yapılıyor',
+                text: "Oturumu kapatmak istediğinize emin misiniz?",
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#d33',   // Kırmızı
+                cancelButtonColor: '#3085d6', // Mavi
+                confirmButtonText: 'Evet, Çıkış Yap',
+                cancelButtonText: 'İptal'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Hoşçakal Mesajı
+                    let timerInterval;
+                    Swal.fire({
+                        title: 'Güle Güle!',
+                        html: 'Oturum kapatılıyor...',
+                        timer: 1000,
+                        timerProgressBar: true,
+                        didOpen: () => {
+                            Swal.showLoading()
+                        },
+                        willClose: () => {
+                            sessionStorage.clear();
+                            window.location.href = "index.html";
+                        }
+                    });
+                }
+            });
         }
 
        // --- SAYFA AÇILINCA ÇALIŞACAK AYARLAR ---

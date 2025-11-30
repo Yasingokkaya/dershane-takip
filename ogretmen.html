@@ -8,7 +8,14 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-
+<link rel="manifest" href="manifest.json">
+    
+    <link rel="icon" type="image/jpeg" href="logo.jpeg">
+    
+    <link rel="apple-touch-icon" href="logo.jpeg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#4e54c8">
     <style>
         /* 1. HAREKETLİ ARKA PLAN */
         body {
@@ -71,15 +78,15 @@
 
 <body>
 
-    <nav class="navbar navbar-expand-lg navbar-light navbar-glass mb-4 sticky-top">
-        <div class="container">
-            <span class="navbar-brand mb-0 h1 fw-bold text-primary">
-                <i class="bi bi-mortarboard-fill"></i> Öğretmen Paneli
+    <nav class="navbar navbar-expand navbar-light navbar-glass mb-4 sticky-top">
+        <div class="container-fluid px-3"> <span class="navbar-brand mb-0 h1 fw-bold text-primary" style="font-size: 1.2rem;">
+                <img src="logo.jpeg" alt="Logo" width="35" height="35" class="d-inline-block align-text-top rounded-3 shadow-sm me-2">
             </span>
-            <div class="d-flex align-items-center">
-                <span class="text-dark me-3 fw-medium" id="navbarKullaniciAdi"></span>
+            
+            <div class="d-flex align-items-center ms-auto">
+                <span class="text-dark me-2 fw-medium small" id="navbarKullaniciAdi"></span>
                 <button onclick="cikisYap()" class="btn btn-outline-danger btn-sm rounded-pill px-3">
-                    <i class="bi bi-power"></i> Çıkış
+                    <i class="bi bi-power"></i> <span class="d-none d-sm-inline">Çıkış</span>
                 </button>
             </div>
         </div>

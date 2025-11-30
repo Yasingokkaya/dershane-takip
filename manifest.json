@@ -1,0 +1,21 @@
+{
+  "name": "Ders Takip Sistemi",
+  "short_name": "Ders Takip",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#4e54c8",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "logo.jpeg",
+      "sizes": "192x192",
+      "type": "image/jpeg"
+    },
+    {
+      "src": "logo.jpeg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
