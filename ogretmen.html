@@ -137,15 +137,12 @@
 <div class="col-12">
                                 <div class="form-floating">
                                     <select id="sinif" class="form-select" required>
-                                        <option value="" selected disabled>Seçiniz...</option>
-                                        <option value="9. Sınıf">9. Sınıf</option>
-                                        <option value="10. Sınıf">10. Sınıf</option>
-                                        <option value="11. Sınıf">11. Sınıf</option>
-                                        <option value="12. Sınıf">12. Sınıf</option>
-                                        <option value="Mezun">Mezun</option>
-                                        <option value="LGS (8. Sınıf)">LGS (8. Sınıf)</option>
-                                        <option value="Ara Sınıf">Ara Sınıf</option>
-                                    </select>
+    <option value="" selected disabled>Seçiniz...</option>
+    <option value="9. Sınıf">9. Sınıf</option>
+    <option value="10. Sınıf">10. Sınıf</option>
+    <option value="11. Sınıf">11. Sınıf</option>
+    <option value="12. Sınıf">12. Sınıf</option>
+</select>
                                     <label for="sinif">Sınıf</label>
                                 </div>
                             </div>
@@ -174,6 +171,36 @@
                         </div>
 
                     </form>
+                </div>
+
+            </div>
+        </div>
+        <div class="row justify-content-center mt-4">
+            <div class="col-md-8 col-lg-6 text-center">
+                
+                <button onclick="gecmisiToggle()" id="btnGecmis" class="btn btn-light text-primary fw-bold shadow-sm rounded-pill px-4 py-2">
+                    <i class="bi bi-clock-history"></i> Bu Ayki Derslerimi Göster
+                </button>
+
+                <div id="gecmisAlani" class="mt-3 text-start" style="display: none;">
+                    <div class="card glass-card border-0">
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover table-borderless mb-0 text-center align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th class="small text-muted">Tarih</th>
+                                            <th class="small text-muted">Sınıf/Ders</th>
+                                            <th class="small text-muted">Durum</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="gecmisTabloBody">
+                                        <tr><td colspan="3" class="text-muted small py-3">Yükleniyor...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
             </div>
@@ -277,6 +304,9 @@
                 // Formu Temizle ve Tarihi Sıfırla
                 const form = document.getElementById("dersForm");
                 form.reset();
+                if(document.getElementById("gecmisAlani").style.display === "block") {
+                    dersGecmisiniGetir();
+                }
                 document.getElementById("tarih").valueAsDate = new Date(); // Tarihi bugüne geri çek
                 document.getElementById("ogretmenAdi").value = ad; // Adı tekrar yerine koy
 
@@ -288,6 +318,85 @@
                 btn.disabled = false;
             }
         });
+        // --- EKSİK OLAN FONKSİYONLAR BURAYA ---
+
+        // 1. Göster/Gizle Butonu Fonksiyonu
+        window.gecmisiToggle = function() {
+            const alan = document.getElementById("gecmisAlani");
+            const btn = document.getElementById("btnGecmis");
+            
+            if (alan.style.display === "none") {
+                alan.style.display = "block";
+                btn.innerHTML = '<i class="bi bi-chevron-up"></i> Listeyi Gizle';
+                dersGecmisiniGetir(); // Listeyi açınca verileri çek
+            } else {
+                alan.style.display = "none";
+                btn.innerHTML = '<i class="bi bi-clock-history"></i> Bu Ayki Derslerimi Göster';
+            }
+        }
+
+        // 2. Verileri Veritabanından Çeken Fonksiyon
+        async function dersGecmisiniGetir() {
+            const tablo = document.getElementById("gecmisTabloBody");
+            const ad = document.getElementById("ogretmenAdi").value;
+
+            // Bu ayın başını ve sonunu bul
+            const bugun = new Date();
+            const ayBasi = new Date(bugun.getFullYear(), bugun.getMonth(), 1).toISOString().split('T')[0];
+            const aySonu = new Date(bugun.getFullYear(), bugun.getMonth() + 1, 0).toISOString().split('T')[0];
+
+            try {
+                // Sorgu: Bu öğretmenin, bu tarih aralığındaki dersleri
+                const q = query(
+                    collection(db, "ders_kayitlari"),
+                    where("ogretmen_adi", "==", ad),
+                    where("tarih", ">=", ayBasi),
+                    where("tarih", "<=", aySonu)
+                );
+
+                const snapshot = await getDocs(q);
+                let html = "";
+
+                // Verileri Tarihe Göre Sırala (Yeniden Eskiye - JS ile sıralama)
+                const dersler = [];
+                snapshot.forEach(doc => dersler.push(doc.data()));
+                dersler.sort((a, b) => new Date(b.tarih) - new Date(a.tarih));
+
+                if (dersler.length === 0) {
+                    html = '<tr><td colspan="3" class="text-muted small py-3">Bu ay henüz ders kaydı yok.</td></tr>';
+                } else {
+                    dersler.forEach(veri => {
+                        // Durum Rengi Ayarla
+                        let durumRozet = "";
+                        if(veri.durum === "bekliyor") durumRozet = '<span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split"></i></span>';
+                        else if(veri.durum === "onaylandi") durumRozet = '<span class="badge bg-success"><i class="bi bi-check-lg"></i></span>';
+                        else if(veri.durum === "reddedildi") durumRozet = '<span class="badge bg-danger"><i class="bi bi-x-lg"></i></span>';
+
+                        // Tarihi Formatla (YYYY-MM-DD -> DD.MM)
+                        const tarihParca = veri.tarih.split("-");
+                        const kisaTarih = `${tarihParca[2]}.${tarihParca[1]}`;
+
+                        // Sınıf Bilgisi Kontrolü (Boşsa - koy)
+                        const sinifBilgisi = veri.sinif ? veri.sinif : "-";
+
+                        html += `
+                        <tr>
+                            <td class="small fw-bold">${kisaTarih}</td>
+                            <td>
+                                <div class="fw-bold small text-dark">${veri.ders_tipi}</div>
+                                <div class="text-muted" style="font-size: 11px;">${sinifBilgisi} • ${veri.sure} Saat</div>
+                            </td>
+                            <td>${durumRozet}</td>
+                        </tr>`;
+                    });
+                }
+                tablo.innerHTML = html;
+
+            } catch (error) {
+                console.error(error);
+                tablo.innerHTML = '<tr><td colspan="3" class="text-danger small">Veri alınamadı.</td></tr>';
+            }
+        }
     </script>
 
 </body>
