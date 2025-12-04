@@ -136,11 +136,9 @@
             .text-end-print { text-align: right !important; }
         }
 
-        /* 1. Arka Planı Hareketli Yap */
-        body {
-            background: linear-gradient(-45deg, #1e3c72, #2a5298, #23d5ab, #23a6d5);
-            background-size: 400% 400%;
-            animation: gradient 15s ease infinite;
+       body {
+            /* Yumuşak Lila'dan Maviye */
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
             min-height: 100vh;
         }
         @keyframes gradient {
@@ -837,7 +835,7 @@
                     genelToplam += veri.sure;
 
                     html += `<tr>
-    <td>${veri.tarih}</td>
+    <td>${tarihFormatla(veri.tarih)}</td>
     <td>${veri.ogretmen_adi}</td>
     <td>${veri.sinif || '-'}</td>  <td>${veri.ders_tipi}</td>
     <td class="fw-bold">${veri.sure} Saat</td>
@@ -1064,9 +1062,7 @@
             window.print();
             alan.classList.add("d-none");
         }
-// YERİNE KONULACAK KOD BİTİŞİ
-
-        // Yardımcı Fonksiyon: Tarih Formatla (YYYY-MM-DD -> DD.MM.YYYY)
+// Yardımcı Fonksiyon: Tarih Formatla (YYYY-MM-DD -> DD.MM.YYYY)
         function tarihFormatla(tarihStr) {
             if(!tarihStr) return "";
             const p = tarihStr.split("-");
@@ -1419,7 +1415,7 @@
 
                     tablo.innerHTML += `<tr>
                         <td class="fw-bold">${veri.ogretmen_adi}</td>
-                        <td>${veri.tarih}</td>
+                        <td>${tarihFormatla(veri.tarih)}</td>
                         <td class="fs-6">${sinifHTML}</td> 
                         <td>${veri.ders_tipi}</td>
                         <td>${veri.sure} Saat</td>
