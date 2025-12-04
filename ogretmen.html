@@ -134,6 +134,23 @@
                                     <label for="dersTipi">Ders / Branş</label>
                                 </div>
                             </div>
+<div class="col-12">
+                                <div class="form-floating">
+                                    <select id="sinif" class="form-select" required>
+                                        <option value="" selected disabled>Seçiniz...</option>
+                                        <option value="9. Sınıf">9. Sınıf</option>
+                                        <option value="10. Sınıf">10. Sınıf</option>
+                                        <option value="11. Sınıf">11. Sınıf</option>
+                                        <option value="12. Sınıf">12. Sınıf</option>
+                                        <option value="Mezun">Mezun</option>
+                                        <option value="LGS (8. Sınıf)">LGS (8. Sınıf)</option>
+                                        <option value="Ara Sınıf">Ara Sınıf</option>
+                                    </select>
+                                    <label for="sinif">Sınıf</label>
+                                </div>
+                            </div>
+                        
+
 
                             <div class="col-12">
                                 <div class="form-floating">
@@ -210,6 +227,7 @@
             const ad = document.getElementById("ogretmenAdi").value;
             const tarih = document.getElementById("tarih").value;
             const ders = document.getElementById("dersTipi").value;
+            const sinif = document.getElementById("sinif").value; // YENİ
             const sure = parseInt(document.getElementById("sure").value);
             const not = document.getElementById("aciklama").value;
             
@@ -229,6 +247,7 @@
                     ogretmen_adi: ad,
                     tarih: tarih,
                     ders_tipi: ders,
+                    sinif: sinif,
                     sure: sure,
                     aciklama: not,
                     durum: "bekliyor",

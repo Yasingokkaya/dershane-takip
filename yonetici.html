@@ -381,6 +381,11 @@
                 </button>
             </li>
             <li class="nav-item">
+                <button class="nav-link" data-bs-toggle="tab" data-bs-target="#dashboard" onclick="dashboardGetir()">
+                    📈 Dashboard
+                </button>
+            </li>
+            <li class="nav-item">
                 <button class="nav-link" data-bs-toggle="tab" data-bs-target="#personel">
                     👥 Personel
                 </button>
@@ -393,6 +398,7 @@
                 <div class="card shadow-sm border-0"><div class="card-body p-0"><table class="table table-hover table-striped mb-0 text-center align-middle"><thead style="background-color: #ffca2c; color: black;"> <tr>
         <th>Öğretmen</th>
         <th>Tarih</th>
+        <th>Sınıf</th>
         <th>Ders</th>
         <th>Süre</th>
         <th>İşlem</th>
@@ -438,6 +444,7 @@
         <thead style="background-color: #0dcaf0; color: black;"> <tr>
         <th>Tarih</th>
         <th>Öğretmen</th>
+        <th>Sınıf</th>
         <th>Ders</th>
         <th>Süre</th>
         <th>Birim Fiyat</th>
@@ -567,6 +574,48 @@
         <p>Teşekkür ederiz.</p>
     </div>
 </div>
+<div class="tab-pane fade" id="dashboard">
+                <div class="card shadow-sm border-0">
+                    <div class="card-body">
+                        
+                        <div class="row mb-4 align-items-center">
+                            <div class="col-md-4">
+                                <label class="fw-bold text-muted small">Dönem Seçimi</label>
+                                <input type="month" id="dashTarih" class="form-control fw-bold text-primary" onchange="dashboardGetir()">
+                            </div>
+                            <div class="col-md-8 text-end">
+                                <div class="alert alert-info d-inline-block py-2 px-3 m-0 small">
+                                    <i class="bi bi-info-circle"></i> Sadece <b>onaylanmış</b> dersler hesaplamaya dahil edilir.
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover align-middle text-center">
+                              <thead style="background: linear-gradient(90deg, #4e54c8 0%, #8f94fb 100%); color: white;">
+                                    <tr>
+                                        <th class="align-middle">Öğretmen</th>
+                                        
+                                        <th class="align-middle">9. Sınıf</th>
+                                        <th class="align-middle">10. Sınıf</th>
+                                        <th class="align-middle">11. Sınıf</th>
+                                        <th class="align-middle">12. Sınıf</th>
+                                        
+                                        <th class="align-middle text-dark bg-light border-start border-end fw-bold">TOPLAM<br>SAAT</th>
+                                        <th class="align-middle">HAK EDİŞ</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="dashboardTablo">
+                                    <tr><td colspan="5" class="p-3">Veriler yükleniyor...</td></tr>
+                                </tbody>
+                                <tfoot id="dashboardToplam" class="fw-bold bg-light text-primary">
+                                    </tfoot>
+                            </table>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
             <div class="tab-pane fade" id="personel">
                 <div class="row justify-content-center">
                     <div class="col-md-5 mb-3">
@@ -788,20 +837,20 @@
                     genelToplam += veri.sure;
 
                     html += `<tr>
-                        <td>${veri.tarih}</td>
-                        <td>${veri.ogretmen_adi}</td>
-                        <td>${veri.ders_tipi}</td>
-                        <td class="fw-bold">${veri.sure} Saat</td>
-                        <td>${fiyat} ₺</td>
-                        <td class="text-success fw-bold">${tutar} ₺</td>
-                        <td>
-                            <div class="btn-group" role="group">
-                                <button onclick="window.dersDuzenle('${id}', '${veri.sure}')" class="btn btn-outline-warning btn-sm" title="Saati Düzenle"><i class="bi bi-pencil"></i></button>
-                                <button onclick="window.dersReddet('${id}')" class="btn btn-outline-secondary btn-sm" title="Reddet (Geri Gönder)"><i class="bi bi-arrow-counterclockwise"></i></button>
-                                <button onclick="window.dersSil('${id}')" class="btn btn-outline-danger btn-sm" title="Tamamen Sil"><i class="bi bi-trash"></i></button>
-                            </div>
-                        </td>
-                    </tr>`;
+    <td>${veri.tarih}</td>
+    <td>${veri.ogretmen_adi}</td>
+    <td>${veri.sinif || '-'}</td>  <td>${veri.ders_tipi}</td>
+    <td class="fw-bold">${veri.sure} Saat</td>
+    <td>${fiyat} ₺</td>
+    <td class="text-success fw-bold">${tutar} ₺</td>
+    <td>
+        <div class="btn-group" role="group">
+            <button onclick="window.dersDuzenle('${id}', '${veri.sure}')" class="btn btn-outline-warning btn-sm" title="Saati Düzenle"><i class="bi bi-pencil"></i></button>
+            <button onclick="window.dersReddet('${id}')" class="btn btn-outline-secondary btn-sm" title="Reddet (Geri Gönder)"><i class="bi bi-arrow-counterclockwise"></i></button>
+            <button onclick="window.dersSil('${id}')" class="btn btn-outline-danger btn-sm" title="Tamamen Sil"><i class="bi bi-trash"></i></button>
+        </div>
+    </td>
+</tr>`;
                 });
                 tablo.innerHTML = html || "<tr><td colspan='7'>Kayıt yok.</td></tr>";
                 
@@ -1349,7 +1398,7 @@
         
         // Not: Eğer Console'da index hatası verirse linke tıklayıp oluşturun
         const qBekleyen = query(collection(db, "ders_kayitlari"), where("durum", "==", "bekliyor"), orderBy("tarih", "desc"));
-        
+        // --- GÜNCELLENMİŞ ONAY TABLOSU KODU ---
         onSnapshot(qBekleyen, (snapshot) => {
             const tablo = document.getElementById("bekleyenTablo");
             const badge = document.getElementById("badgeSayi");
@@ -1358,15 +1407,20 @@
             if(tablo) {
                 tablo.innerHTML = "";
                 if (snapshot.docs.length === 0) { 
-                    tablo.innerHTML = `<tr><td colspan="5" class="p-4 text-muted">Bekleyen onay yok. 🎉</td></tr>`; 
+                    tablo.innerHTML = `<tr><td colspan="6" class="p-4 text-muted">Bekleyen onay yok. 🎉</td></tr>`; 
                 }
 
                 // A. Tabloyu Doldur
                 snapshot.docs.forEach(docSnap => {
                     const veri = docSnap.data();
+                    
+                    // RENKLİ ROZET BURADA ÇAĞRILIYOR 👇
+                    const sinifHTML = sinifRozeti(veri.sinif);
+
                     tablo.innerHTML += `<tr>
                         <td class="fw-bold">${veri.ogretmen_adi}</td>
                         <td>${veri.tarih}</td>
+                        <td class="fs-6">${sinifHTML}</td> 
                         <td>${veri.ders_tipi}</td>
                         <td>${veri.sure} Saat</td>
                         <td>
@@ -1376,29 +1430,7 @@
                     </tr>`;
                 });
             }
-
-            // B. SES VE BİLDİRİM KISMI
-            if (!ilkYukleme) {
-                snapshot.docChanges().forEach((change) => {
-                    if (change.type === "added") {
-                        // Sesi Çal
-                        const ses = document.getElementById("bildirimSesi");
-                        if(ses) ses.play().catch(e => console.log("Ses çalma hatası:", e));
-
-                        // Kutuyu Göster
-                        const yeniVeri = change.doc.data();
-                        const bildirimMetni = document.getElementById("bildirimMetni");
-                        const bildirimKutusu = document.getElementById("canliBildirim");
-                        
-                        if(bildirimMetni && bildirimKutusu) {
-                            bildirimMetni.innerText = `${yeniVeri.ogretmen_adi} yeni bir ders girdi!`;
-                            const toast = new bootstrap.Toast(bildirimKutusu);
-                            toast.show();
-                        }
-                    }
-                });
-            }
-            ilkYukleme = false;
+            // ... (Bildirim kodları aynı kalabilir) ...
         });
        // --- MODERN ONAY VE REDDETME İŞLEMİ ---
         window.onayIslemi = async function(id, durum) {
@@ -1539,7 +1571,157 @@
                 btn.disabled = false;
             }
         }
-        
+// ---// --- GÜNCELLENMİŞ DASHBOARD (SADECE 9-10-11-12) ---
+        window.dashboardGetir = async function() {
+            const tarihInput = document.getElementById("dashTarih");
+            const tablo = document.getElementById("dashboardTablo");
+            const footer = document.getElementById("dashboardToplam");
+
+            // 1. Tarih Kontrolü
+            if (!tarihInput.value) {
+                const bugun = new Date();
+                const yil = bugun.getFullYear();
+                const ay = String(bugun.getMonth() + 1).padStart(2, '0');
+                tarihInput.value = `${yil}-${ay}`;
+            }
+
+            const secilenAy = tarihInput.value;
+            tablo.innerHTML = '<tr><td colspan="7" class="text-muted p-4"><div class="spinner-border text-primary"></div> Veriler Analiz Ediliyor...</td></tr>';
+
+            try {
+                // A. Öğretmen Ücretlerini Çek
+                const userQ = query(collection(db, "kullanicilar"), where("rol", "==", "ogretmen"));
+                const userSnap = await getDocs(userQ);
+                let ogretmenBilgileri = {};
+                userSnap.forEach(doc => {
+                    ogretmenBilgileri[doc.data().ad_soyad] = doc.data().saat_ucreti || 0;
+                });
+
+                // B. Ders Kayıtlarını Çek
+                const ayBasi = secilenAy + "-01";
+                const aySonu = secilenAy + "-31"; 
+
+                const dersQ = query(collection(db, "ders_kayitlari"), 
+                    where("durum", "==", "onaylandi"),
+                    where("tarih", ">=", ayBasi),
+                    where("tarih", "<=", aySonu)
+                );
+                
+                const dersSnap = await getDocs(dersQ);
+
+                // C. SADECE BU SINIFLAR SÜTUN OLARAK GELECEK
+                const sinifListesi = ["9. Sınıf", "10. Sınıf", "11. Sınıf", "12. Sınıf"];
+                
+                let ozet = {}; 
+
+                dersSnap.forEach(doc => {
+                    const veri = doc.data();
+                    const hoca = veri.ogretmen_adi;
+                    const sinif = veri.sinif; 
+                    const sure = parseInt(veri.sure);
+
+                    if(!ozet[hoca]) {
+                        ozet[hoca] = { toplamSaat: 0, detay: {} };
+                        sinifListesi.forEach(s => ozet[hoca].detay[s] = 0);
+                    }
+
+                    // 1. Toplam Saate Her Şeyi Ekle (Listede olmayan sınıflar da paraya dahil olsun)
+                    ozet[hoca].toplamSaat += sure;
+
+                    // 2. Sadece listemizdeki (9-10-11-12) sınıfları detay sütununa yaz
+                    if (sinif && sinifListesi.includes(sinif)) {
+                        ozet[hoca].detay[sinif] += sure;
+                    }
+                });
+
+                // D. Tabloyu Çizdir
+                let html = "";
+                let gen_toplamSaat = 0;
+                let gen_toplamPara = 0;
+
+                // Sütun Toplamlarını Tutmak İçin Dizi (4 Sınıf Var)
+                let sutunToplamlari = new Array(sinifListesi.length).fill(0);
+
+                if (Object.keys(ozet).length === 0) {
+                    tablo.innerHTML = '<tr><td colspan="7" class="text-muted p-3">Kayıt bulunamadı.</td></tr>';
+                    footer.innerHTML = "";
+                    return;
+                }
+
+                for (const [hocaAdi, veri] of Object.entries(ozet)) {
+                    const birimUcret = ogretmenBilgileri[hocaAdi] || 0;
+                    const toplamTutar = veri.toplamSaat * birimUcret;
+                    
+                    gen_toplamSaat += veri.toplamSaat;
+                    gen_toplamPara += toplamTutar;
+
+                    // Sınıf Sütunlarını Oluştur
+                    let sinifSutunlariHTML = "";
+                    sinifListesi.forEach((s, index) => {
+                        const saat = veri.detay[s];
+                        sutunToplamlari[index] += saat; 
+                        
+                        const hucreIcerigi = saat > 0 ? `<span class="fw-bold text-dark">${saat}</span>` : `<span class="text-muted text-opacity-25">-</span>`;
+                        sinifSutunlariHTML += `<td>${hucreIcerigi}</td>`;
+                    });
+
+                    html += `
+                    <tr>
+                        <td class="fw-bold text-start text-primary">${hocaAdi}</td>
+                        ${sinifSutunlariHTML}
+                        <td class="fw-bold bg-light border-start border-end fs-5 text-dark">${veri.toplamSaat}</td>
+                        <td class="fw-bold text-success">${toplamTutar.toLocaleString('tr-TR')} ₺</td>
+                    </tr>
+                    `;
+                }
+
+                tablo.innerHTML = html;
+
+                // E. Alt Toplam
+                let footerSutunHTML = "";
+                sutunToplamlari.forEach(t => {
+                    footerSutunHTML += `<td>${t > 0 ? t : ''}</td>`;
+                });
+
+                footer.innerHTML = `
+                    <tr class="table-secondary" style="border-top: 2px solid #4e54c8;">
+                        <td class="text-end fw-bold">GENEL TOPLAM:</td>
+                        ${footerSutunHTML}
+                        <td class="fw-bold fs-5 text-primary">${gen_toplamSaat}</td>
+                        <td class="fw-bold fs-5 text-success">${gen_toplamPara.toLocaleString('tr-TR')} ₺</td>
+                    </tr>
+                `;
+
+            } catch (error) {
+                console.error(error);
+                tablo.innerHTML = `<tr><td colspan="7" class="text-danger">Hata: ${error.message}</td></tr>`;
+            }
+        }
+        // --- GÜNCELLENMİŞ RENK PALETİ (SADECE 9-10-11-12) ---
+        function sinifRozeti(sinif) {
+            // Eğer sınıf seçilmemişse silik gri çizgi göster
+            if (!sinif) return '<span class="badge bg-secondary bg-opacity-25 text-dark">-</span>';
+
+            let renkClass = "bg-secondary"; // Varsayılan: GRİ (Diğer her şey için)
+
+            // Sadece Lise Kademeleri İçin Özel Renkler
+            if (sinif.includes("9")) {
+                renkClass = "bg-primary"; // 🔵 9. Sınıf -> Mavi
+            } 
+            else if (sinif.includes("10")) {
+                renkClass = "bg-success"; // 🟢 10. Sınıf -> Yeşil
+            } 
+            else if (sinif.includes("11")) {
+                renkClass = "bg-info text-dark"; // 💠 11. Sınıf -> Turkuaz (Yazı koyu)
+            } 
+            else if (sinif.includes("12")) {
+                renkClass = "bg-warning text-dark"; // 🟡 12. Sınıf -> Sarı (Yazı koyu)
+            }
+            
+            // Diğerleri (Mezun, LGS, Ara Sınıf) otomatik olarak GRİ kalır.
+
+            return `<span class="badge ${renkClass}">${sinif}</span>`;
+        }
     </script>
     <audio id="bildirimSesi" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.m4a" preload="auto"></audio>
 
